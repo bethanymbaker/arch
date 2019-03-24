@@ -7,3 +7,7 @@ print(os.environ['HOME'])
 
 print(os.environ)
 
+
+
+
+print("Hi I love you Alex")
