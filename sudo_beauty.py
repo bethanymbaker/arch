@@ -7,7 +7,8 @@ import os
 # print(os.environ)
 
 for a in os.environ:
-    print('Var: ', a, 'Value: ', os.getenv(a))
+    print(f"Var: {a}; Value: {os.getenv(a)}")
+    # print('Var: ', a, 'Value: ', os.getenv(a))
 print("all done")
 
 
