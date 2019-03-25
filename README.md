@@ -1,6 +1,8 @@
 # arch
 I want to try a CTF for LHC.
 
+https://trailofbits.github.io/ctf/intro/
+
 https://cloud.google.com/compute/docs/gcloud-compute/
 
 To set up gcloud cli on mac: https://www.sivadass.in/install-google-cloud-sdk-on-macos-in-three-simple-steps/
