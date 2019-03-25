@@ -1,0 +1,331 @@
+    1  python -version
+    2  python --version
+    3  xcode-select --install
+    4  gcc --version
+    5  ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+    6  clear
+    7  cd 
+    8  pwd
+    9  cd ~/
+   10  pwd
+   11  cd ~/
+   12  open -e .profile
+   13  vi .profile
+   14  ls
+   15  pwd
+   16  brew install python
+   17  python --version
+   18  python3 --version
+   19   . /Users/bethanybaker/.local/share/virtualenvs/myprojects-Plh8Nh0O/bin/activate
+   20  ls
+   21  python main.py
+   22  deactivate
+   23  ls
+   24  pipenv run python main.py
+   25  pip freeze > requirements.txt
+   26  ls
+   27  cat requirements.txt 
+   28  exi
+   29  exit
+   30  echo $PATH
+   31  clear
+   32  cat .profile 
+   33  mkdir myprojects
+   34  cd myprojects
+   35  pipenv install requests
+   36  s
+   37  ls
+   38  pwd
+   39  vi main.py
+   40  python main.py
+   41  ls
+   42  pipenv shell
+   43  clear
+   44  cd ..
+   45  ls
+   46  cd myprojects/
+   47  ls
+   48  ls
+   49  cd ..
+   50  ls
+   51  cd myprojects/
+   52  ls
+   53  cd ..
+   54  ls
+   55  ls
+   56  cd myprojects/
+   57  ls
+   58  cd ..
+   59  ls
+   60  https://github.com/clearbrain/clearbrain-data-science-challenge-bethanymbaker
+   61  brew install git
+   62  git clone https://github.com/clearbrain/clearbrain-data-science-challenge-bethanymbaker
+   63  ls
+   64  cd clearbrain-data-science-challenge-bethanymbaker/
+   65  ls
+   66  ls -a
+   67  ls 
+   68  ls -l
+   69  head data
+   70  ls
+   71  cat data
+   72  cd data
+   73  ls
+   74  head conversion_data.csv 
+   75  ls
+   76  python
+   77  pip install pandas
+   78  ls
+   79  python
+   80  clear
+   81  python --version
+   82  ls
+   83  cd
+   84  ls
+   85  cd Desktop/
+   86  ls
+   87  ls
+   88  python
+   89  ls
+   90  rm -r myprojects/
+   91  ls
+   92  cd clearbrain-data-science-challenge-bethanymbaker/
+   93  ls
+   94  cat README.md 
+   95  ls
+   96  ls -la
+   97  cd data/
+   98  ls
+   99  head conversion_data.csv 
+  100  ls
+  101  cd ..
+  102  ls
+  103  cd
+  104  ls
+  105  cd Desktop/
+  106  ls
+  107  cd zesty/
+  108  ls
+  109  head public_layout.csv 
+  110  python
+  111  pwd
+  112  ls
+  113  python
+  114  python --version
+  115  python
+  116  cd Desktop/
+  117  ls
+  118  mv *.jpg root/pics/
+  119  ls
+  120  mv *.png root/pics/
+  121  python --version
+  122  python
+  123  kill 9341
+  124  sl
+  125  ls
+  126  cldar
+  127  sl
+  128  cl
+  129  cd
+  130  ls
+  131  cd Desktop/
+  132  ls
+  133  mv *.png root/pics/
+  134  ls
+  135  rm *.jpg root/pics/
+  136  ls
+  137  ls -l /dev/null
+  138  ls
+  139  rm -r clearbrain-data-science-challenge-bethanymbaker/
+  140  ls
+  141  cd clearbrain-data-science-challenge-bethanymbaker/
+  142  ls
+  143  clear
+  144  clear
+  145  ls
+  146  pwd
+  147  ls
+  148  cd ..
+  149  ls 
+  150  rm -r clearbrain-data-science-challenge-bethanymbaker/
+  151  cd clearbrain-data-science-challenge-bethanymbaker/
+  152  ls
+  153  ls -l
+  154  ls -la
+  155  rm .git
+  156  ls
+  157  rm -r .git
+  158  y
+  159  ls
+  160  ls -la
+  161  cd ..
+  162  ls
+  163  rm -r clearbrain-data-science-challenge-bethanymbaker/
+  164  ls
+  165  clear
+  166  ls
+  167  cd Desktop/
+  168  ls
+  169  mv *.png root/pics/
+  170  ls
+  171  mv *.jpg root/pics/
+  172  ls
+  173  clear
+  174  ls
+  175  python --version
+  176  python
+  177  cd
+  178  ls -la
+  179  ls -l /dev/null
+  180  vi .profile
+  181  python
+  182  cd Desktop/
+  183  ls
+  184  python
+  185  tor
+  186  ls
+  187  cd YouTubeViews/
+  188  ls
+  189  python youtube.py 30 urls.txt 38 65
+  190  cd /usr/local/etc/tor/
+  191  ls
+  192  vi torrc.sample 
+  193  ls
+  194  clear
+  195  ls
+  196  cd
+  197  ls
+  198  cd YouTubeViews/
+  199  python youtube.py 30 urls.txt 38 65
+  200  brew info tor
+  201  python
+  202  python youtube.py 30 urls.txt 38 65
+  203  cd YouTubeViews/
+  204  python youtube.py 30 urls.txt 38 65
+  205  python youtube.py 30 urls.txt 38 65
+  206  clear
+  207  python youtube.py 30 urls.txt 38 65
+  208  clear
+  209  python youtube.py 30 urls.txt 38 65
+  210  clear
+  211  python youtube.py 30 urls.txt 38 65
+  212  clear
+  213  python youtube.py 30 urls.txt 38 65
+  214  clear
+  215  cle
+  216  ls
+  217  cd ..
+  218  ls
+  219  cd ..
+  220  ls
+  221  firefox
+  222  cd Desktop/
+  223  ls
+  224  vi name.sh
+  225  nano name.sh
+  226  chmod +x name.sh 
+  227  ./name.sh
+  228  brew install xdotool
+  229  brew cask install xquartz
+  230  brew install xdotool
+  231  ./name.sh
+  232  clelar
+  233  clear
+  234  ls
+  235  cd
+  236  ls
+  237  cd yobotor/
+  238  ls
+  239  clear
+  240  ls
+  241  python yobotor.py 30 urls.txt 38 65
+  242  clear
+  243  python yobotor.py 30 urls.txt 38 65
+  244  python yobotor.py 30 urls.txt 38 65
+  245  python yobotor.py 30 urls.txt 38 65
+  246  python yobotor.py 30 urls.txt 38 65
+  247  python yobotor.py 30 urls.txt 38 65
+  248  brew install geckodriver
+  249  clear
+  250  python yobotor.py 30 urls.txt 38 65
+  251  python yobotor.py 5 urls.txt 38 65
+  252  python yobotor.py 5 urls.txt 38 65
+  253  python
+  254  python yobotor.py 5 urls.txt 38 65
+  255  cd Desktop/
+  256  ls
+  257  mv *.jpg root/pics/
+  258  mv *.png root/pics
+  259  ls
+  260  mv *.jpeg root/pics/
+  261  ls -l /dev/null
+  262  ls /dev/nul
+  263  ls /dev/null
+  264  ls -l /dev/null
+  265  cd Desktop/
+  266  ls
+  267  vm *.png root/pics/
+  268  ls
+  269  mv *.jpg root/pics/
+  270  ls
+  271  clear
+  272  ls
+  273  ls
+  274  mv *.png root/pics/
+  275  ls
+  276  clear
+  277  ls
+  278  mv memes root
+  279  ls
+  280  clear
+  281  ls
+  282  mv KillaZs root/
+  283  ls
+  284  clear
+  285  cd Desktop/
+  286  ls
+  287  ls *.png
+  288  ls *.jpg
+  289  ls *.{png,jpg}
+  290  mv *.{png,jpg} root/selfies/
+  291  ls
+  292  clear
+  293  echo $PATH
+  294  echo $NAME
+  295  NAME=Thotiana
+  296  echo $NAME
+  297  python
+  298  ls
+  299  cd PycharmProjects/
+  300  ls
+  301  git clone https://github.com/bethanymbaker/arch.git
+  302  ls
+  303  cd arch
+  304  vi .gitignore
+  305  ls
+  306  vi .gitignore
+  307  gcloud compute --project "iris-226418" ssh --zone "us-east1-b" "alex"
+  308  brew install gcloud
+  309  cd ~/Desktop/google-cloud-sdk
+  310  ls
+  311  bashCommand = """
+  312  gcloud compute --project "iris-226418" ssh --zone "us-east1-b" "alex"
+  313  """
+  314  import subprocess
+  315  process = subprocess.Popen(bashCommand.split(), stdout=subprocess.PIPE)
+  316  output, error = process.communicate()python
+  317  python
+  318  gcloud --version
+  319  cd Desktop/google-cloud-sdk
+  320  ls
+  321  sh ./google-cloud-sdk/install.sh 
+  322  sh install.sh
+  323  cd
+  324  gcloud -v
+  325  gcloud -v
+  326  gcloud compute --project "iris-226418" ssh --zone "us-east1-b" "alex"
+  327  gcloud auth login
+  328  gcloud config set project iris-226418
+  329  history
+  330  pwd
+  331  history > Desktop/gcloud_setup_history.txt
