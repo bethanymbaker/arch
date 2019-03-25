@@ -13,12 +13,12 @@
 # --boot-disk-type=pd-ssd
 # """
 
-bashCommand = """
+ssh_into_instance = """
 gcloud compute --project "iris-226418" ssh --zone "us-east1-b" "alex"
 """
 
 
 # bashCommand = "cwm --rdf test.rdf --ntriples > test.nt"
-import subprocess
-process = subprocess.Popen(bashCommand.split(), stdout=subprocess.PIPE)
-output, error = process.communicate()
+# import subprocess
+# process = subprocess.Popen(ssh_into_instance.split(), stdout=subprocess.PIPE)
+# output, error = process.communicate()
