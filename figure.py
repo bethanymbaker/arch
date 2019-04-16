@@ -3,23 +3,24 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 from datetime import datetime
+
 # sns.set()
 
 pd.set_option('display.max_rows', 500)
 pd.set_option('display.max_columns', 500)
-pd.set_option('display.width', 500)
+pd.set_option('display.width', 150)
 
 # Originatin wrangling
 origination_data_file = "~/Desktop/historical_data1_2009/historical_data1_Q12009/historical_data1_Q12009.txt"
 
-origination_names = ["fico", "first_payment_date", "first_time_home_buyer", "maturity_date", "msa", "mort_ins_pct",
-                     "num_units", "occpy_sts", "cltv", "dti", "orig_upb", "ltv", "int_rt", "channel", "ppmt_pnlty",
-                     "prod_type", "st", "prop_type", "zipcode", "id_loan", "loan_purpose", "orig_loan_term", "cnt_borr",
-                     "seller_name", "servicer_name", "flag_sc"]
+origination_names = ["fico", "first_payment_date", "is_first_time_home_buyer", "maturity_date", "msa", "mort_ins_pct",
+                     "num_units", "occpy_sts", "cltv", "dti", "orig_upb", "ltv", "interest_rate", "channel",
+                     "is_ppmt_pnlty", "prod_type", "state", "prop_type", "zipcode", "id_loan", "loan_purpose",
+                     "orig_loan_term", "num_borr", "seller_name", "servicer_name", "is_super_conforming"]
 
 origination = pd.read_csv(origination_data_file, header=None, delimiter='|', names=origination_names,
                           na_values={'fico': 9999,
-                                     'first_time_home_buyer': 9,
+                                     'is_first_time_home_buyer': 9,
                                      'mort_ins_pct': 999,
                                      'num_units': 99,
                                      'occpy_sts': 9,
@@ -27,15 +28,33 @@ origination = pd.read_csv(origination_data_file, header=None, delimiter='|', nam
                                      'dti': 999,
                                      'ltv': 999,
                                      'channel': 9,
-                                     'prop_type': 99},
-                          dtype={'occpy_sts': 'category', 'channel': 'category', 'st': 'category',
-                                 'prop_type': 'category'})
+                                     'prop_type': 99,
+                                     'loan_purpose': 9,
+                                     'num_borr': 99})
+# dtype={'msa': 'category',
+#        'occpy_sts': 'category',
+#        'channel': 'category',
+#        'state': 'category',
+#        'prop_type': 'category',
+#        'zipcode': 'category',
+#        'loan_purpose': 'category',
+#        'num_borr': 'category'})
 
-origination[['first_payment_date', 'maturity_date']] = origination[['first_payment_date ', 'maturity_date']]\
+del origination['prod_type']
+
+origination[['first_payment_date', 'maturity_date']] = origination[['first_payment_date', 'maturity_date']]\
     .apply(pd.to_datetime, format='%Y%m')
-origination.first_time_home_buyer = origination.first_time_home_buyer.map({'Y': True, 'N': False}).astype(bool)
-origination.msa = origination.msa.astype('category').cat.codes
-origination.ppmt_pnlty = origination.ppmt_pnlty.map({'Y': True, 'N': False}).astype(bool)
+origination.is_first_time_home_buyer = origination.is_first_time_home_buyer.map({'Y': True, 'N': False}).astype(bool)
+origination.is_ppmt_pnlty = origination.is_ppmt_pnlty.map({'Y': True, 'N': False}).astype(bool)
+origination.is_super_conforming = pd.isna(origination.is_super_conforming)
+
+origination['msa_code'] = origination.msa.cat.codes
+
+dum_1 = pd.get_dummies(origination.msa, prefix='msa', drop_first=True)
+
+
+
+# origination.set_index('id_loan', inplace=True)
 
 # Look at distributions
 # sns.distplot(origination.fico[~origination.fico.isna()])
