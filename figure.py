@@ -2,11 +2,12 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
+from datetime import datetime
 sns.set()
 
 pd.set_option('display.max_rows', 500)
 pd.set_option('display.max_columns', 500)
-pd.set_option('display.width', 1000)
+pd.set_option('display.width', 500)
 
 origination_data_file = "~/Desktop/historical_data1_2009/historical_data1_Q12009/historical_data1_Q12009.txt"
 monthly_performance_data_file = \
@@ -22,5 +23,7 @@ performance_names = ["id_loan", "svcg_cycle", "current_upb", "delq_sts", "loan_a
                      "maint_pres_costs", "taxes_ins_costs", "misc_costs", "actual_loss", "modcost", "stepmod_ind",
                      "dpm_ind", "eltv"]
 
+st = datetime.now()
 origination = pd.read_csv(origination_data_file, header=None, delimiter='|')
 performance = pd.read_csv(monthly_performance_data_file, header=None, delimiter="|")
+print(f"time to read csvs: {datetime.now() - st}")
