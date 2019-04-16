@@ -18,11 +18,30 @@ print(f"working on {local_hostname} ({local_fqdn}) with {ip_address}")
 
 # bind the socket to the port 23456
 server_address = (ip_address, 23456)
-print('starting up on %s port %s' % server_address)
+print(f"starting up on {server_address[0]} port {server_address[1]}")
 sock.bind(server_address)
 
 # listen for incoming connections (server mode) with one connection at a time
 sock.listen(1)
+
+# # this is our client-handling thread
+# def handle_client(client_socket):
+#     # print out what the client sends
+#     request = client_socket.recv(1024)
+#     print(f"[*] Received: {request}")
+#
+#     # send back a packet
+#     client_socket.send("ACK!")
+#     client_socket.close()
+#
+#
+# while True:
+#     client, addr = server.accept()
+#     print(f"[*] Accepted connection from: {addr[0]}:{addr[1]}")
+#
+#     # spin up client to handle incoming data
+#     client_handler = threading.Thread(target=handle_client, args=(client,))
+#     client_handler.start()
 
 while True:
     # wait for a connection
@@ -31,17 +50,17 @@ while True:
 
     try:
         # show who connected to us
-        print ('connection from', client_address)
+        print(f"connection from {client_address}")
 
         # receive the data in small chunks and print it
         while True:
             data = connection.recv(64)
             if data:
                 # output received data
-                print ("Data: %s" % data)
+                print(f"Data: {data}")
             else:
                 # no more data -- quit the loop
-                print ("no more data.")
+                print("no more data.")
                 break
     finally:
         # Clean up the connection
@@ -63,22 +82,5 @@ while True:
 # print(f"[*] Listening on {bind_ip}:{bind_port}")
 #
 #
-# # this is our client-handling thread
-# def handle_client(client_socket):
-#     # print out what the client sends
-#     request = client_socket.recv(1024)
-#     print(f"[*] Received: {request}")
-#
-#     # send back a packet
-#     client_socket.send("ACK!")
-#     client_socket.close()
-#
-#
-# while True:
-#     client, addr = server.accept()
-#     print(f"[*] Accepted connection from: {addr[0]}:{addr[1]}")
-#
-#     # spin up client to handle incoming data
-#     client_handler = threading.Thread(target=handle_client, args=(client,))
-#     client_handler.start()
+
 
