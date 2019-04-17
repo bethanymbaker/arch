@@ -1,18 +1,23 @@
 import pandas as pd
-import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 from datetime import datetime
+import xgboost as xgb
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import mean_squared_error
+from sklearn import metrics
+from sklearn.metrics import f1_score, roc_auc_score
+from xgboost import XGBClassifier
 
-# sns.set()
+from imblearn.over_sampling import SMOTE
+from imblearn.metrics import classification_report_imbalanced
 
 pd.set_option('display.max_rows', 500)
 pd.set_option('display.max_columns', 100)
 pd.set_option('display.width', 150)
 
-# Originatin wrangling
+# Origination wrangling
 origination_data_file = "~/Desktop/historical_data1_2009/historical_data1_Q12009/historical_data1_Q12009.txt"
-
 origination_names = ["fico", "first_payment_date", "is_first_time_home_buyer", "maturity_date", "msa", "mort_ins_pct",
                      "num_units", "occpy_sts", "cltv", "dti", "orig_upb", "ltv", "interest_rate", "channel",
                      "is_ppmt_pnlty", "prod_type", "state", "prop_type", "zipcode", "id_loan", "loan_purpose",
@@ -22,8 +27,6 @@ origination = pd.read_csv(origination_data_file,
                           header=None,
                           delimiter='|',
                           names=origination_names,
-                          parse_dates=['first_payment_date', 'maturity_date'],
-                          date_parser=lambda x: pd.datetime.strptime(x, '%Y%m'),
                           na_values={'fico': 9999,
                                      'is_first_time_home_buyer': 9,
                                      'mort_ins_pct': 999,
@@ -60,11 +63,8 @@ for col in category_columns:
         origination[coll] = dumm[coll]
     del origination[col]
 
-df = origination.copy()
-df.set_index(['id_loan', 'first_payment_date'], inplace=True)
-del df['maturity_date']
-del df['seller_name']
-del df['servicer_name']
+df = origination.copy().drop(columns=['first_payment_date', 'maturity_date', 'seller_name', 'servicer_name'])\
+    .set_index('id_loan')
 
 plot_flag = False
 if plot_flag:
@@ -123,12 +123,46 @@ performance = pd.read_csv(monthly_performance_data_file,
                           header=None,
                           delimiter="|",
                           names=performance_names,
-                          usecols=['id_loan', 'monthly_reporting_period', 'delq_sts', 'cd_zero_bal'])
-performance.monthly_reporting_period = pd.to_datetime(performance.monthly_reporting_period, format='%Y%m')
+                          usecols=['id_loan', 'delq_sts', 'loan_age', 'cd_zero_bal'],
+                          dtype={'delq_sts': str})
 print(f"time to load performance data: {datetime.now() - st}")
 
-test = pd.pivot_table(index=performance.id_loan,
-                      columns=performance.loan_age,
-                      values=performance.delq_sts,
-                      data=performance)
+df_2 = performance.groupby('id_loan').tail(1)
+df_3 = df_2[df_2.delq_sts != 'R'].copy()
+df_3.delq_sts = df_3.delq_sts.astype(int)
+df_3['is_deliquent'] = df_3.delq_sts.apply(lambda x: 1 if x >= 3 else 0)
+df_3.set_index('id_loan', inplace=True)
 
+df_4 = pd.merge(df, df_3['is_deliquent'], left_index=True, right_index=True)
+
+X, y = df_4.iloc[:, :-1], df_4.iloc[:, -1]
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.30, random_state=0)
+
+alg = XGBClassifier(learning_rate=0.1,
+                    n_estimators=140,
+                    max_depth=5,
+                    min_child_weight=3,
+                    gamma=0.2,
+                    subsample=0.6,
+                    colsample_bytree=1.0,
+                    objective='binary:logistic',
+                    nthread=4,
+                    scale_pos_weight=1,
+                    seed=27)
+alg.fit(X_train, y_train, eval_metric='auc')
+
+predictions = alg.predict(X_test)
+pred_proba = alg.predict_proba(X_test)[:, 1]
+
+print("Accuracy Score : %.4g" % metrics.accuracy_score(y_test, predictions))
+print("AUC: %f" % metrics.roc_auc_score(y_test, pred_proba))
+print("F1 Score: %f" % metrics.f1_score(y_test, predictions))
+
+feat_imp = alg.feature_importances_
+feat = X_train.columns.tolist()
+res_df = pd.DataFrame({'Features': feat, 'Importance': feat_imp}).sort_values(by='Importance', ascending=False)
+res_df.plot('Features', 'Importance', kind='bar', title='Feature Importances')
+plt.ylabel('Feature Importance Score')
+plt.show()
+print(res_df)
+print(res_df["Features"].tolist())
