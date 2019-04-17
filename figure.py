@@ -119,13 +119,13 @@ performance_names = ["id_loan", "monthly_reporting_period", "current_upb", "delq
                      "maint_pres_costs", "taxes_ins_costs", "misc_costs", "actual_loss", "modcost", "stepmod_ind",
                      "dpm_ind", "eltv"]
 st = datetime.now()
-performance = pd.read_csv(monthly_performance_data_file, header=None, delimiter="|", names=performance_names,
-                          na_values={'delq_sts': 'XX'},
-                          dtype={'delq_sts': 'category'})
-print(f"time to read csvs: {datetime.now() - st}")
+performance = pd.read_csv(monthly_performance_data_file,
+                          header=None,
+                          delimiter="|",
+                          names=performance_names,
+                          usecols=['id_loan', 'monthly_reporting_period', 'delq_sts', 'cd_zero_bal'])
 performance.monthly_reporting_period = pd.to_datetime(performance.monthly_reporting_period, format='%Y%m')
-
-tmp = performance[['id_loan', 'loan_age', 'delq_sts']].copy()
+print(f"time to load performance data: {datetime.now() - st}")
 
 test = pd.pivot_table(index=performance.id_loan,
                       columns=performance.loan_age,
