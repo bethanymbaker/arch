@@ -7,7 +7,7 @@ from datetime import datetime
 # sns.set()
 
 pd.set_option('display.max_rows', 500)
-pd.set_option('display.max_columns', 500)
+pd.set_option('display.max_columns', 100)
 pd.set_option('display.width', 150)
 
 # Originatin wrangling
@@ -52,24 +52,63 @@ category_columns = ['is_first_time_home_buyer',
 
 for col in category_columns:
     new_col = origination[col].astype('category')
-    dumm = pd.get_dummies(new_col, prefix=col, drop_first=True, dummy_na=True)
+    if len(new_col[new_col.isna()]) > 0:
+        dumm = pd.get_dummies(new_col, prefix=col, drop_first=True, dummy_na=True)
+    else:
+        dumm = pd.get_dummies(new_col, prefix=col, drop_first=True)
     for coll in dumm.columns:
         origination[coll] = dumm[coll]
     del origination[col]
 
-origination.set_index(['id_loan', 'first_payment_date', 'maturity_date'], inplace=True)
-del origination['seller_name']
-del origination['servicer_name']
+df = origination.copy()
+df.set_index(['id_loan', 'first_payment_date'], inplace=True)
+del df['maturity_date']
+del df['seller_name']
+del df['servicer_name']
 
-# Look at distributions
-# sns.distplot(origination.fico[~origination.fico.isna()])
-# plt.title('Distribution of credit scores')
-# plt.grid()
+plot_flag = False
+if plot_flag:
+    fig, axes = plt.subplots(3, 3, figsize=(12, 12))
 
-# sns.distplot(origination.mort_ins_pct[~origination.mort_ins_pct.isna() & (origination.mort_ins_pct != 0)])
-# plt.title('Distribution of mortgage insurance percentage (%)')
-# plt.grid()
+    sns.distplot(df[~df['fico'].isna()]['fico'], ax=axes[0, 0])
+    axes[0, 0].set_xlabel('fico')
+    axes[0, 0].grid()
 
+    sns.distplot(df[~df['mort_ins_pct'].isna() & (df.mort_ins_pct != 0)]['mort_ins_pct'], ax=axes[0, 1])
+    axes[0, 1].set_xlabel('mort_ins_pct')
+    axes[0, 1].grid()
+
+    sns.distplot(df[~df['cltv'].isna()]['cltv'], ax=axes[0, 2])
+    axes[0, 2].set_xlabel('cltv')
+    axes[0, 2].grid()
+
+    sns.distplot(df[~df['dti'].isna()]['dti'], ax=axes[1, 0])
+    axes[1, 0].set_xlabel('dti')
+    axes[1, 0].grid()
+
+    sns.distplot(df[~df['ltv'].isna()]['ltv'], ax=axes[1, 1])
+    axes[1, 1].set_xlabel('ltv')
+    axes[1, 1].grid()
+
+    sns.distplot(df[~df['interest_rate'].isna()]['interest_rate'], ax=axes[1, 2])
+    axes[1, 2].set_xlabel('interest_rate')
+    axes[1, 2].grid()
+
+    sns.distplot(df[~df['num_units'].isna()]['num_units'], ax=axes[2, 0])
+    axes[2, 0].set_xlabel('num_units')
+    axes[2, 0].grid()
+
+    sns.distplot(df[~df['orig_upb'].isna()]['orig_upb'], ax=axes[2, 1])
+    axes[2, 1].set_xlabel('orig_upb')
+    axes[2, 1].grid()
+
+    sns.distplot(df[~df['orig_loan_term'].isna()]['orig_loan_term'], ax=axes[2, 2])
+    axes[2, 2].set_xlabel('orig_loan_term')
+    axes[2, 2].grid()
+
+    fig.suptitle('Distribution of numeric features')
+    fig.savefig('/Users/bethanybaker/Desktop/2019-04-17_Feature-Distributions.png')
+    plt.close(fig)
 
 # Performance wrangling
 monthly_performance_data_file = \
