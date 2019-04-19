@@ -27,6 +27,7 @@ origination = pd.read_csv(origination_data_file,
                           header=None,
                           delimiter='|',
                           names=origination_names,
+                          index_col='id_loan',
                           na_values={'fico': 9999,
                                      'is_first_time_home_buyer': 9,
                                      'mort_ins_pct': 999,
@@ -39,7 +40,11 @@ origination = pd.read_csv(origination_data_file,
                                      'prop_type': 99,
                                      'loan_purpose': 9,
                                      'num_borr': 99})\
-    .drop(columns='prod_type')
+    .drop(columns=['first_payment_date',
+                   'maturity_date',
+                   'prod_type',
+                   'seller_name',
+                   'servicer_name'])
 
 category_columns = ['is_first_time_home_buyer',
                     'channel',
@@ -63,52 +68,54 @@ for col in category_columns:
         origination[coll] = dumm[coll]
     del origination[col]
 
-df = origination.copy().drop(columns=['first_payment_date', 'maturity_date', 'seller_name', 'servicer_name'])\
-    .set_index('id_loan')
-
 plot_flag = False
 if plot_flag:
     fig, axes = plt.subplots(3, 3, figsize=(12, 12))
 
-    sns.distplot(df[~df['fico'].isna()]['fico'], ax=axes[0, 0])
+    sns.distplot(origination[~origination['fico'].isna()]['fico'], ax=axes[0, 0])
     axes[0, 0].set_xlabel('fico')
     axes[0, 0].grid()
 
-    sns.distplot(df[~df['mort_ins_pct'].isna() & (df.mort_ins_pct != 0)]['mort_ins_pct'], ax=axes[0, 1])
+    sns.distplot(origination[~origination['mort_ins_pct'].isna() & (origination.mort_ins_pct != 0)]['mort_ins_pct'], ax=axes[0, 1])
     axes[0, 1].set_xlabel('mort_ins_pct')
     axes[0, 1].grid()
 
-    sns.distplot(df[~df['cltv'].isna()]['cltv'], ax=axes[0, 2])
+    sns.distplot(origination[~origination['cltv'].isna()]['cltv'], ax=axes[0, 2])
     axes[0, 2].set_xlabel('cltv')
     axes[0, 2].grid()
 
-    sns.distplot(df[~df['dti'].isna()]['dti'], ax=axes[1, 0])
+    sns.distplot(origination[~origination['dti'].isna()]['dti'], ax=axes[1, 0])
     axes[1, 0].set_xlabel('dti')
     axes[1, 0].grid()
 
-    sns.distplot(df[~df['ltv'].isna()]['ltv'], ax=axes[1, 1])
+    sns.distplot(origination[~origination['ltv'].isna()]['ltv'], ax=axes[1, 1])
     axes[1, 1].set_xlabel('ltv')
     axes[1, 1].grid()
 
-    sns.distplot(df[~df['interest_rate'].isna()]['interest_rate'], ax=axes[1, 2])
+    sns.distplot(origination[~origination['interest_rate'].isna()]['interest_rate'], ax=axes[1, 2])
     axes[1, 2].set_xlabel('interest_rate')
     axes[1, 2].grid()
 
-    sns.distplot(df[~df['num_units'].isna()]['num_units'], ax=axes[2, 0])
+    sns.distplot(origination[~origination['num_units'].isna()]['num_units'], ax=axes[2, 0])
     axes[2, 0].set_xlabel('num_units')
     axes[2, 0].grid()
 
-    sns.distplot(df[~df['orig_upb'].isna()]['orig_upb'], ax=axes[2, 1])
+    sns.distplot(origination[~origination['orig_upb'].isna()]['orig_upb'], ax=axes[2, 1])
     axes[2, 1].set_xlabel('orig_upb')
     axes[2, 1].grid()
 
-    sns.distplot(df[~df['orig_loan_term'].isna()]['orig_loan_term'], ax=axes[2, 2])
+    sns.distplot(origination[~origination['orig_loan_term'].isna()]['orig_loan_term'], ax=axes[2, 2])
     axes[2, 2].set_xlabel('orig_loan_term')
     axes[2, 2].grid()
 
     fig.suptitle('Distribution of numeric features')
     fig.savefig('/Users/bethanybaker/Desktop/2019-04-17_Feature-Distributions.png')
     plt.close(fig)
+
+numeric_features = ['fico', 'mort_ins_pct', 'num_units', 'cltv', 'dti', 'orig_upb', 'ltv', 'interest_rate',
+                    'orig_loan_term']
+# Print number of mission observations
+print(origination[numeric_features].isna().sum())
 
 # Performance wrangling
 monthly_performance_data_file = \
@@ -133,10 +140,59 @@ df_3.delq_sts = df_3.delq_sts.astype(int)
 df_3['is_deliquent'] = df_3.delq_sts.apply(lambda x: 1 if x >= 3 else 0)
 df_3.set_index('id_loan', inplace=True)
 
-df_4 = pd.merge(df, df_3['is_deliquent'], left_index=True, right_index=True)
+df_4 = pd.merge(origination, df_3['is_deliquent'], left_index=True, right_index=True)
 
-X, y = df_4.iloc[:, :-1], df_4.iloc[:, -1]
+df_5 = df_4.dropna().sample(frac=0.1)
+
+X, y = df_5.iloc[:, :-1], df_5.iloc[:, -1]
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.30, random_state=0)
+
+
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import accuracy_score
+from sklearn.svm import SVC
+from sklearn.ensemble import RandomForestClassifier
+import numpy as np
+
+# Train model
+clf_3 = SVC(class_weight='balanced', probability=True)
+
+clf_3.fit(X_train, y_train)
+
+# Predict on training set
+pred_y_3 = clf_3.predict(X_test)
+
+# Is our model still predicting just one class?
+print(np.unique(pred_y_3))
+# [0 1]
+
+# How's our accuracy?
+print(accuracy_score(y_test, pred_y_3))
+# 0.688
+
+# What about AUROC?
+prob_y_3 = clf_3.predict_proba(X_test)
+prob_y_3 = [p[1] for p in prob_y_3]
+print(roc_auc_score(y_test, prob_y_3))
+
+# Train model
+clf_4 = RandomForestClassifier()
+clf_4.fit(X_train, y_train)
+
+# Predict on training set
+pred_y_4 = clf_4.predict(X_test)
+
+# Is our model still predicting just one class?
+print(np.unique(pred_y_4))
+
+# How's our accuracy?
+print(accuracy_score(y_test, pred_y_4))
+
+# What about AUROC?
+prob_y_4 = clf_4.predict_proba(X_test)
+prob_y_4 = [p[1] for p in prob_y_4]
+print(roc_auc_score(y_test, prob_y_4))
+
 
 alg = XGBClassifier(learning_rate=0.1,
                     n_estimators=140,
