@@ -18,10 +18,32 @@ pd.set_option('display.width', 150)
 
 # Origination wrangling
 origination_data_file = "~/Desktop/historical_data1_2009/historical_data1_Q12009/historical_data1_Q12009.txt"
-origination_names = ["fico", "first_payment_date", "is_first_time_home_buyer", "maturity_date", "msa", "mort_ins_pct",
-                     "num_units", "occpy_sts", "cltv", "dti", "orig_upb", "ltv", "interest_rate", "channel",
-                     "is_ppmt_pnlty", "prod_type", "state", "prop_type", "zipcode", "id_loan", "loan_purpose",
-                     "orig_loan_term", "num_borr", "seller_name", "servicer_name", "is_super_conforming"]
+origination_names = ["fico",
+                     "first_payment_date",
+                     "is_first_time_home_buyer",
+                     "maturity_date",
+                     "msa",
+                     "mort_ins_pct",
+                     "num_units",
+                     "occpy_sts",
+                     "cltv",
+                     "dti",
+                     "orig_upb",
+                     "ltv",
+                     "interest_rate",
+                     "channel",
+                     "is_ppmt_pnlty",
+                     "prod_type",
+                     "state",
+                     "prop_type",
+                     "zipcode",
+                     "id_loan",
+                     "loan_purpose",
+                     "orig_loan_term",
+                     "num_borr",
+                     "seller_name",
+                     "servicer_name",
+                     "is_super_conforming"]
 
 origination = pd.read_csv(origination_data_file,
                           header=None,
@@ -142,6 +164,22 @@ df_3.set_index('id_loan', inplace=True)
 
 df_4 = pd.merge(origination, df_3['is_deliquent'], left_index=True, right_index=True)
 
+
+
+
+
+
+
+
+
+
+
+# df_ = df_4[numeric_features + ['is_deliquent']]
+# _ = sns.pairplot(df_.sample(frac=0.01))
+# _.savefig("/Users/bethanybaker/Desktop/numeric_features_pairplot.png")
+# sns.heatmap(df_.corr())
+
+##################
 df_5 = df_4.dropna().sample(frac=0.1)
 
 X, y = df_5.iloc[:, :-1], df_5.iloc[:, -1]
