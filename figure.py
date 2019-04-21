@@ -68,9 +68,24 @@ origination = pd.read_csv(origination_data_file,
                    'seller_name',
                    'servicer_name'])
 
-numeric_features = ['fico', 'mort_ins_pct', 'num_units', 'cltv', 'dti', 'orig_upb', 'ltv', 'interest_rate',
+# Examine correlation of features
+_ = origination.corr().stack().reset_index().sort_values(by=0, ascending=False)
+_ = _[_[0] != 1.0]
+_.head(20)
+_.tail(20)
+# Note that cltv and ltv are highly correlated 0.953
+
+numeric_features = ['fico',
+                    'mort_ins_pct',
+                    'num_units',
+                    'cltv',
+                    'dti',
+                    'orig_upb',
+                    'ltv',
+                    'interest_rate',
                     'orig_loan_term']
-# Print number of mission observations
+
+# Print number of missing observations
 print(origination[numeric_features].isna().sum())
 
 category_features = ['is_first_time_home_buyer',
