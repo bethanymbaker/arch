@@ -68,19 +68,24 @@ origination = pd.read_csv(origination_data_file,
                    'seller_name',
                    'servicer_name'])
 
-category_columns = ['is_first_time_home_buyer',
-                    'channel',
-                    'is_ppmt_pnlty',
-                    'prop_type',
-                    'msa',
-                    'occpy_sts',
-                    'state',
-                    'zipcode',
-                    'loan_purpose',
-                    'num_borr',
-                    'is_super_conforming']
+numeric_features = ['fico', 'mort_ins_pct', 'num_units', 'cltv', 'dti', 'orig_upb', 'ltv', 'interest_rate',
+                    'orig_loan_term']
+# Print number of mission observations
+print(origination[numeric_features].isna().sum())
 
-for col in category_columns:
+category_features = ['is_first_time_home_buyer',
+                     'channel',
+                     'is_ppmt_pnlty',
+                     'prop_type',
+                     'msa',
+                     'occpy_sts',
+                     'state',
+                     'zipcode',
+                     'loan_purpose',
+                     'num_borr',
+                     'is_super_conforming']
+
+for col in category_features:
     new_col = origination[col].astype('category')
     if len(new_col[new_col.isna()]) > 0:
         dumm = pd.get_dummies(new_col, prefix=col, drop_first=True, dummy_na=True)
@@ -134,10 +139,6 @@ if plot_flag:
     fig.savefig('/Users/bethanybaker/Desktop/2019-04-17_Feature-Distributions.png')
     plt.close(fig)
 
-numeric_features = ['fico', 'mort_ins_pct', 'num_units', 'cltv', 'dti', 'orig_upb', 'ltv', 'interest_rate',
-                    'orig_loan_term']
-# Print number of mission observations
-print(origination[numeric_features].isna().sum())
 
 # Performance wrangling
 monthly_performance_data_file = \
