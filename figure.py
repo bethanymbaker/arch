@@ -73,7 +73,8 @@ _ = origination.corr().stack().reset_index().sort_values(by=0, ascending=False)
 _ = _[_[0] != 1.0]
 _.head(20)
 _.tail(20)
-# Note that cltv and ltv are highly correlated 0.953
+# Note that cltv and ltv are highly correlated 0.952995. I will most likely
+# w
 
 numeric_features = ['fico',
                     'mort_ins_pct',
@@ -87,6 +88,7 @@ numeric_features = ['fico',
 
 # Print number of missing observations
 print(origination[numeric_features].isna().sum())
+# dti missing 2602 values
 
 category_features = ['is_first_time_home_buyer',
                      'channel',
