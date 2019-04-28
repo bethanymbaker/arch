@@ -74,7 +74,7 @@ _ = _[_[0] != 1.0]
 _.head(20)
 _.tail(20)
 # Note that cltv and ltv are highly correlated 0.952995. I will most likely
-# w
+# remove one of these feautres
 
 numeric_features = ['fico',
                     'mort_ins_pct',
@@ -160,11 +160,32 @@ if plot_flag:
 # Performance wrangling
 monthly_performance_data_file = \
     "~/Desktop/historical_data1_2009/historical_data1_Q12009/historical_data1_time_Q12009.txt"
-performance_names = ["id_loan", "monthly_reporting_period", "current_upb", "delq_sts", "loan_age", "mths_remng",
-                     "repch_flag", "flag_mod", "cd_zero_bal", "dt_zero_bal", "current_int_rt", "non_int_brng_upb",
-                     "dt_lst_pi", "mi_recoveries", "net_sale_proceeds", "non_mi_recoveries", "expenses", "legal_costs",
-                     "maint_pres_costs", "taxes_ins_costs", "misc_costs", "actual_loss", "modcost", "stepmod_ind",
-                     "dpm_ind", "eltv"]
+performance_names = ["id_loan",
+                     "monthly_reporting_period",
+                     "current_upb",
+                     "delq_sts",
+                     "loan_age",
+                     "mths_remng",
+                     "repch_flag",
+                     "flag_mod",
+                     "cd_zero_bal",
+                     "dt_zero_bal",
+                     "current_int_rt",
+                     "non_int_brng_upb",
+                     "dt_lst_pi",
+                     "mi_recoveries",
+                     "net_sale_proceeds",
+                     "non_mi_recoveries",
+                     "expenses",
+                     "legal_costs",
+                     "maint_pres_costs",
+                     "taxes_ins_costs",
+                     "misc_costs",
+                     "actual_loss",
+                     "modcost",
+                     "stepmod_ind",
+                     "dpm_ind",
+                     "eltv"]
 st = datetime.now()
 performance = pd.read_csv(monthly_performance_data_file,
                           header=None,
