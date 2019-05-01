@@ -228,38 +228,33 @@ _['mutual_info'] = mutual_info_classif(discrete_features, target, discrete_featu
 _['mutual_info_pct'] = _['mutual_info']/_.mutual_info.max()
 _['variance'] = discrete_features.var()
 _['variance_pct'] = _.variance/_.variance.max()
+_['kount'] = df_4[_.index].sum()
 
 sns.distplot(_.variance)
+plt.grid()
 
 # Look at features with maximum mutual information
 _.sort_values('mutual_info', inplace=True, ascending=False)
-print(_.head(50))
-print(df_4['num_borr_2.0'].value_counts())
-print(df_4['loan_purpose_N'].value_counts())
-print(df_4['is_ppmt_pnlty_nan'].value_counts())
-print(df_4['is_first_time_home_buyer_Y'].value_counts())
-
-# _.head(50).plot(kind='bar')
-# _.tail(50).plot(kind='bar')
+print(_.head(20))
 
 # Keep features w/variance_pct >= 2%
-cols_to_use = _[_.variance_pct >= 0.02].index.values
+cols_to_use = list(_[_.variance_pct >= 0.02].index.values)
+numeric_features.remove('cltv')
+df_5 = df_4[numeric_features + cols_to_use]
 
+print(df_5.index.get_level_values(1).value_counts(normalize=True) * 100)
+# Very imbalanced dataset (0.73% deliquent)
 
+# Modeling - start with small sample of data
+df_6 = df_5.dropna().sample(frac=0.1)
+print(df_6.index.get_level_values(1).value_counts(normalize=True) * 100)
 
-
-
-
-# df_ = df_4[numeric_features + ['is_deliquent']]
-# _ = sns.pairplot(df_.sample(frac=0.01))
-# _.savefig("/Users/bethanybaker/Desktop/numeric_features_pairplot.png")
-# sns.heatmap(df_.corr())
-
-##################
-df_5 = df_4.dropna().sample(frac=0.1)
-
-X, y = df_5.iloc[:, :-1], df_5.iloc[:, -1]
+X, y = df_6.iloc[:, :-1], df_6.iloc[:, -1]
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.30, random_state=0)
+
+
+
+
 
 
 from sklearn.linear_model import LogisticRegression
