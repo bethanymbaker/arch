@@ -68,14 +68,7 @@ origination = pd.read_csv(origination_data_file,
                    'seller_name',
                    'servicer_name'])
 
-# Examine correlation of features
-_ = origination.corr().stack().reset_index().sort_values(by=0, ascending=False)
-_ = _[_[0] != 1.0]
-_.head(20)
-_.tail(20)
-# Note that cltv and ltv are highly correlated 0.952995. I will most likely
-# remove one of these feautres
-
+# Examine correlation of numeric features
 numeric_features = ['fico',
                     'mort_ins_pct',
                     'num_units',
@@ -85,6 +78,23 @@ numeric_features = ['fico',
                     'ltv',
                     'interest_rate',
                     'orig_loan_term']
+
+_ = origination[numeric_features].corr().stack().reset_index().sort_values(by=0, ascending=False)\
+    .rename(columns={0: 'corr'})
+_ = _[_.level_0 != _.level_1]
+_['feature_pair'] = _[['level_0', 'level_1']].apply(lambda r: "_".join(sorted([r['level_0'], r['level_1']])), axis=1)
+_ = _[['feature_pair', 'corr']].drop_duplicates()
+
+sns.distplot(_['corr'])
+plt.title('Correlation of numeric features')
+plt.grid()
+
+_.head(20)
+_.tail(20)
+# Note that cltv and ltv are highly correlated 0.952995. I will most likely
+# remove one of these feautres
+
+
 
 # Print number of missing observations
 print(origination[numeric_features].isna().sum())
