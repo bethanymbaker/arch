@@ -8,6 +8,7 @@ from sklearn.metrics import mean_squared_error
 from sklearn import metrics
 from sklearn.metrics import f1_score, roc_auc_score
 from xgboost import XGBClassifier
+from sklearn.feature_selection import mutual_info_classif
 
 from imblearn.over_sampling import SMOTE
 from imblearn.metrics import classification_report_imbalanced
@@ -89,17 +90,16 @@ sns.distplot(_['corr'])
 plt.title('Correlation of numeric features')
 plt.grid()
 
-_.head(20)
-_.tail(20)
-# Note that cltv and ltv are highly correlated 0.952995. I will most likely
-# remove one of these feautres
-
-
+_.head()
+# Note that cltv and ltv are highly correlated 0.952995. Will need to eliminate one
 
 # Print number of missing observations
 print(origination[numeric_features].isna().sum())
-# dti missing 2602 values
+# cltv                33
+# dti               2602
+# ltv                 15
 
+# One-hot encoding of categorical features
 category_features = ['is_first_time_home_buyer',
                      'channel',
                      'is_ppmt_pnlty',
@@ -210,19 +210,21 @@ df_3 = df_2[df_2.delq_sts != 'R'].copy()
 df_3.delq_sts = df_3.delq_sts.astype(int)
 df_3['is_deliquent'] = df_3.delq_sts.apply(lambda x: 1 if x >= 3 else 0)
 df_3.set_index('id_loan', inplace=True)
-
 df_4 = pd.merge(origination, df_3['is_deliquent'], left_index=True, right_index=True)\
     .set_index('is_deliquent', append=True)
 
-from sklearn.feature_selection import mutual_info_classif
+# look at roc auc for numeric/continuous features
+__ = df_4[numeric_features].dropna()
+tgt = __.index.get_level_values(1)
+__ = __.apply(lambda clmn: roc_auc_score(tgt, clmn)).sort_values(ascending=False)
+print(__)
+# Cltv slightly lower than ltv
 
 # look at mutual information of discrete features and target
 target = df_4.index.get_level_values(1).values
 discrete_features = df_4.loc[:, "is_first_time_home_buyer_Y":]
 _ = pd.DataFrame(index=discrete_features.columns, columns=['mutual_info'])
-res = mutual_info_classif(discrete_features, target, discrete_features=True)
-_.mutual_info = res
-_.sort_values('mutual_info', inplace=True, ascending=False)
+_['mutual_info'] = mutual_info_classif(discrete_features, target, discrete_features=True)
 _['mutual_info_pct'] = _['mutual_info']/_.mutual_info.max()
 _['variance'] = discrete_features.var()
 _['variance_pct'] = _.variance/_.variance.max()
@@ -230,6 +232,7 @@ _['variance_pct'] = _.variance/_.variance.max()
 sns.distplot(_.variance)
 
 # Look at features with maximum mutual information
+_.sort_values('mutual_info', inplace=True, ascending=False)
 print(_.head(50))
 print(df_4['num_borr_2.0'].value_counts())
 print(df_4['loan_purpose_N'].value_counts())
