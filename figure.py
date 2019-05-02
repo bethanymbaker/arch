@@ -2,16 +2,12 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 from datetime import datetime
-import xgboost as xgb
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import mean_squared_error
 from sklearn import metrics
-from sklearn.metrics import f1_score, roc_auc_score
+from sklearn.metrics import f1_score, roc_auc_score, accuracy_score
 from xgboost import XGBClassifier
 from sklearn.feature_selection import mutual_info_classif
-
-from imblearn.over_sampling import SMOTE
-from imblearn.metrics import classification_report_imbalanced
+import numpy as np
 
 pd.set_option('display.max_rows', 500)
 pd.set_option('display.max_columns', 100)
@@ -219,6 +215,7 @@ tgt = __.index.get_level_values(1)
 __ = __.apply(lambda clmn: roc_auc_score(tgt, clmn)).sort_values(ascending=False)
 print(__)
 # Cltv slightly lower than ltv
+numeric_features.remove('cltv')
 
 # look at mutual information of discrete features and target
 target = df_4.index.get_level_values(1).values
@@ -234,100 +231,60 @@ sns.distplot(_.variance)
 plt.grid()
 
 # Look at features with maximum mutual information
+# problem w/ msa_38060.0
+
 _.sort_values('mutual_info', inplace=True, ascending=False)
 print(_.head(20))
 
-# Keep features w/variance_pct >= 2%
-cols_to_use = list(_[_.variance_pct >= 0.02].index.values)
-numeric_features.remove('cltv')
-df_5 = df_4[numeric_features + cols_to_use]
+# Keep features w/variance_pct >= 2% & mutual_info >= x%
+cols_to_use = list(_[(_.variance_pct >= 0.02) & (_.mutual_info_pct >= 0)].index.values) + numeric_features
+df_5 = df_4[cols_to_use]
 
 print(df_5.index.get_level_values(1).value_counts(normalize=True) * 100)
 # Very imbalanced dataset (0.73% deliquent)
 
 # Modeling - start with small sample of data
-df_6 = df_5.dropna().sample(frac=0.1)
-print(df_6.index.get_level_values(1).value_counts(normalize=True) * 100)
+df_6 = df_5.dropna().sample(frac=0.5)
+
+# compute scale factor
+vals = df_6.index.get_level_values(1).value_counts().values
+scale_pos_weight = vals[0]/vals[1]
+print(f"scale factor = {scale_pos_weight:.2f}")
 
 X, y = df_6.iloc[:, :-1], df_6.iloc[:, -1]
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.30, random_state=0)
 
 
+########################################################################################################################
+# Train xgboost
+alg = XGBClassifier(objective='binary:logistic',
+                    scale_pos_weight=scale_pos_weight)
 
-
-
-
-from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import accuracy_score
-from sklearn.svm import SVC
-from sklearn.ensemble import RandomForestClassifier
-import numpy as np
-
-# Train model
-clf_3 = SVC(class_weight='balanced', probability=True)
-
-clf_3.fit(X_train, y_train)
-
-# Predict on training set
-pred_y_3 = clf_3.predict(X_test)
-
-# Is our model still predicting just one class?
-print(np.unique(pred_y_3))
-# [0 1]
-
-# How's our accuracy?
-print(accuracy_score(y_test, pred_y_3))
-# 0.688
-
-# What about AUROC?
-prob_y_3 = clf_3.predict_proba(X_test)
-prob_y_3 = [p[1] for p in prob_y_3]
-print(roc_auc_score(y_test, prob_y_3))
-
-# Train model
-clf_4 = RandomForestClassifier()
-clf_4.fit(X_train, y_train)
-
-# Predict on training set
-pred_y_4 = clf_4.predict(X_test)
-
-# Is our model still predicting just one class?
-print(np.unique(pred_y_4))
-
-# How's our accuracy?
-print(accuracy_score(y_test, pred_y_4))
-
-# What about AUROC?
-prob_y_4 = clf_4.predict_proba(X_test)
-prob_y_4 = [p[1] for p in prob_y_4]
-print(roc_auc_score(y_test, prob_y_4))
-
-
-alg = XGBClassifier(learning_rate=0.1,
-                    n_estimators=140,
-                    max_depth=5,
-                    min_child_weight=3,
-                    gamma=0.2,
-                    subsample=0.6,
-                    colsample_bytree=1.0,
-                    objective='binary:logistic',
-                    nthread=4,
-                    scale_pos_weight=1,
-                    seed=27)
+st_2 = datetime.now()
 alg.fit(X_train, y_train, eval_metric='auc')
+print(f"time to train xgboost model: {datetime.now() - st_2}")
 
+# Is our model predicting just one class?
 predictions = alg.predict(X_test)
+print(np.unique(predictions))
 pred_proba = alg.predict_proba(X_test)[:, 1]
 
-print("Accuracy Score : %.4g" % metrics.accuracy_score(y_test, predictions))
-print("AUC: %f" % metrics.roc_auc_score(y_test, pred_proba))
-print("F1 Score: %f" % metrics.f1_score(y_test, predictions))
+print(f"accuracy score : {accuracy_score(y_test, predictions):.2f}")
+print(f"roc auc score: {roc_auc_score(y_test, pred_proba):.2f}")
+print(f"f1 score: {f1_score(y_test, predictions):.2f}")
+
+fpr, tpr, nope = metrics.roc_curve(y_test,  pred_proba)
+auc = roc_auc_score(y_test, pred_proba)
+plt.plot(fpr, tpr, label=f"auc = {auc:.2f}")
+plt.grid()
+plt.legend(loc=4)
+plt.show()
 
 feat_imp = alg.feature_importances_
 feat = X_train.columns.tolist()
-res_df = pd.DataFrame({'Features': feat, 'Importance': feat_imp}).sort_values(by='Importance', ascending=False)
-res_df.plot('Features', 'Importance', kind='bar', title='Feature Importances')
-plt.ylabel('Feature Importance Score')
-plt.show()
-print(res_df)
-print(res_df["Features"].tolist())
+res_df = pd.DataFrame({'features': feat, 'importance': feat_imp}).sort_values(by='importance', ascending=False)
+# res_df.plot('Features', 'Importance', kind='bar', title='Feature Importances')
+# plt.ylabel('Feature Importance Score')
+# plt.show()
+print(res_df.head(20))
+print(res_df["features"].tolist())
