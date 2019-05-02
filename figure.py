@@ -75,17 +75,22 @@ numeric_features = ['fico',
                     'interest_rate',
                     'orig_loan_term']
 
-_ = origination[numeric_features].corr().stack().reset_index().sort_values(by=0, ascending=False)\
+# Look at correlation of numeric feature
+corr_ = origination[numeric_features].corr().stack().reset_index().sort_values(by=0, ascending=False)\
     .rename(columns={0: 'corr'})
-_ = _[_.level_0 != _.level_1]
-_['feature_pair'] = _[['level_0', 'level_1']].apply(lambda r: "_".join(sorted([r['level_0'], r['level_1']])), axis=1)
-_ = _[['feature_pair', 'corr']].drop_duplicates()
+corr_ = corr_[corr_.level_0 != corr_.level_1]
+corr_['feature_pair'] = corr_[['level_0', 'level_1']]\
+    .apply(lambda r: "_".join(sorted([r['level_0'], r['level_1']])), axis=1)
+corr_ = corr_[['feature_pair', 'corr']].drop_duplicates()
 
-sns.distplot(_['corr'])
+# corr_.set_index('feature_pair').plot(kind='bar')
+# plt.grid()
+
+sns.distplot(corr_['corr'])
 plt.title('Correlation of numeric features')
 plt.grid()
 
-_.head()
+corr_.head()
 # Note that cltv and ltv are highly correlated 0.952995. Will need to eliminate one
 
 # Print number of missing observations
@@ -209,16 +214,16 @@ df_4 = pd.merge(origination, df_3['is_deliquent'], left_index=True, right_index=
     .set_index('is_deliquent', append=True)
 
 # look at roc auc for numeric/continuous features
-__ = df_4[numeric_features].dropna()
-tgt = __.index.get_level_values(1)
-__ = __.apply(lambda clmn: roc_auc_score(tgt, clmn)).sort_values(ascending=False)
+roc_auc_ = df_4[numeric_features].dropna()
+tgt = roc_auc_.index.get_level_values(1)
+roc_auc_ = roc_auc_.apply(lambda clmn: roc_auc_score(tgt, clmn)).sort_values(ascending=False)
 print('roc auc values:')
-print(__)
+print(roc_auc_)
 # Cltv slightly lower than ltv
 numeric_features.remove('cltv')
 
 # look at variance & mutual information of discrete features and target
-_ = pd.read_csv("~/Desktop/Figure_mutual_information.csv")
+_ = pd.read_csv("~/Desktop/Figure_mutual_information.csv", index_col=0)
 # print("computing mutual information of discrete features...")
 # st_0 = datetime.now()
 # target = df_4.index.get_level_values(1).values
@@ -231,12 +236,15 @@ _ = pd.read_csv("~/Desktop/Figure_mutual_information.csv")
 # _['kount'] = df_4[_.index].sum()
 # print(f"time to compute mutual information = {datetime.now() - st_0}")
 
-# sns.distplot(_.variance)
-# plt.grid()
+sns.distplot(_.variance)
+plt.grid()
 
 # Look at features with maximum mutual information
 _.sort_values('mutual_info', inplace=True, ascending=False)
 print(_.head(20))
+
+# Save because this takes a long time to run
+# _.to_csv("~/Desktop/Figure_mutual_information.csv")
 
 # Keep features w/variance_pct >= 2% & mutual_info >= x%
 cols_to_use = list(_[(_.variance_pct >= 0.02) & (_.mutual_info_pct >= 0)].index.values) + numeric_features
@@ -246,22 +254,21 @@ print(df_5.index.get_level_values(1).value_counts(normalize=True) * 100)
 # Very imbalanced dataset (only 0.73% deliquent)
 
 # Modeling - sample data at first
-df_6 = df_5.dropna().sample(frac=0.50)
+df_6 = df_5.dropna().sample(frac=0.750)
+X, y = df_6, df_6.index.get_level_values(1)
 
-# compute scale factor
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.30, random_state=0)
 vals = df_6.index.get_level_values(1).value_counts().values
 scale_pos_weight = vals[0]/vals[1]
 print(f"scale factor = {scale_pos_weight:.2f}")
 
-X, y = df_6, df_6.index.get_level_values(1)
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.30, random_state=0)
-
-# Train xgboost
-phactor = 1/8
+# Build xgboost model
+phactor = 1
 alg = XGBClassifier(objective='binary:logistic',
                     scale_pos_weight=scale_pos_weight * phactor)
 
 st_2 = datetime.now()
+print(f"current time is {st_2}")
 alg.fit(X_train, y_train, eval_metric='auc')
 print(f"time to train xgboost model: {datetime.now() - st_2}")
 
@@ -271,7 +278,7 @@ pred_proba = alg.predict_proba(X_test)[:, 1]
 
 ddf = pd.DataFrame({'pred': predictions}).rename(columns={0: 'pred'})
 ddf['actual'] = y_test
-print(f"confusion matrix:\n {pd.crosstab(ddf.pred, ddf.actual, normalize=True)*100:.2f}")
+print(f"confusion matrix:\n {round(pd.crosstab(ddf.pred, ddf.actual, normalize=True)*100, 2)}")
 
 print(f"accuracy score : {accuracy_score(y_test, predictions):.2f}")
 print(f"roc auc score: {roc_auc_score(y_test, pred_proba):.2f}")
@@ -290,7 +297,7 @@ res_df = pd.DataFrame({'features': feat, 'importance': feat_imp}).sort_values(by
 
 res_df = pd.merge(res_df, _, left_on='features', right_index=True, how='left')
 res_df = pd.merge(res_df,
-                  __.to_frame(name='roc_auc').reset_index().rename(columns={'index': 'features'}),
+                  roc_auc_.to_frame(name='roc_auc').reset_index().rename(columns={'index': 'features'}),
                   on='features',
                   how='left')
 res_df = res_df[['features', 'importance', 'mutual_info_pct', 'variance_pct', 'kount', 'roc_auc']]
