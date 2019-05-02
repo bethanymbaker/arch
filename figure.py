@@ -246,7 +246,7 @@ print(df_5.index.get_level_values(1).value_counts(normalize=True) * 100)
 # Very imbalanced dataset (only 0.73% deliquent)
 
 # Modeling - sample data at first
-df_6 = df_5.dropna().sample(frac=0.25)
+df_6 = df_5.dropna().sample(frac=0.50)
 
 # compute scale factor
 vals = df_6.index.get_level_values(1).value_counts().values
@@ -257,8 +257,9 @@ X, y = df_6, df_6.index.get_level_values(1)
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.30, random_state=0)
 
 # Train xgboost
+phactor = 1/8
 alg = XGBClassifier(objective='binary:logistic',
-                    scale_pos_weight=scale_pos_weight)
+                    scale_pos_weight=scale_pos_weight * phactor)
 
 st_2 = datetime.now()
 alg.fit(X_train, y_train, eval_metric='auc')
@@ -267,6 +268,10 @@ print(f"time to train xgboost model: {datetime.now() - st_2}")
 # Is our model predicting just one class?
 predictions = alg.predict(X_test)
 pred_proba = alg.predict_proba(X_test)[:, 1]
+
+ddf = pd.DataFrame({'pred': predictions}).rename(columns={0: 'pred'})
+ddf['actual'] = y_test
+print(f"confusion matrix:\n {pd.crosstab(ddf.pred, ddf.actual, normalize=True)*100:.2f}")
 
 print(f"accuracy score : {accuracy_score(y_test, predictions):.2f}")
 print(f"roc auc score: {roc_auc_score(y_test, pred_proba):.2f}")
@@ -282,10 +287,10 @@ plt.show()
 feat_imp = alg.feature_importances_
 feat = X_train.columns.tolist()
 res_df = pd.DataFrame({'features': feat, 'importance': feat_imp}).sort_values(by='importance', ascending=False)
-res_df = res_df[res_df.importance >= 0.001]
 
-res_df.plot('features', 'importance', kind='bar', title='Feature importances')
-plt.ylabel('Feature Importance Score')
-plt.show()
-# print(res_df.head())
-
+res_df = pd.merge(res_df, _, left_on='features', right_index=True, how='left')
+res_df = pd.merge(res_df,
+                  __.to_frame(name='roc_auc').reset_index().rename(columns={'index': 'features'}),
+                  on='features',
+                  how='left')
+res_df = res_df[['features', 'importance', 'mutual_info_pct', 'variance_pct', 'kount', 'roc_auc']]
