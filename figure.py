@@ -5,8 +5,7 @@ from datetime import datetime
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import f1_score, roc_auc_score, accuracy_score, roc_curve
 from xgboost import XGBClassifier
-from sklearn.feature_selection import mutual_info_classif
-import numpy as np
+# from sklearn.feature_selection import mutual_info_classif
 
 pd.set_option('display.max_rows', 500)
 pd.set_option('display.max_columns', 100)
@@ -90,10 +89,11 @@ sns.distplot(corr_['corr'])
 plt.title('Correlation of numeric features')
 plt.grid()
 
-corr_.head()
+print(corr_.head())
 # Note that cltv and ltv are highly correlated 0.952995. Will need to eliminate one
 
 # Print number of missing observations
+print("Number of missing observations for each numeric feature:")
 print(origination[numeric_features].isna().sum())
 # cltv                33
 # dti               2602
@@ -196,6 +196,7 @@ performance_names = ["id_loan",
                      "stepmod_ind",
                      "dpm_ind",
                      "eltv"]
+print("Loading performance data...")
 st = datetime.now()
 performance = pd.read_csv(monthly_performance_data_file,
                           header=None,
@@ -204,6 +205,7 @@ performance = pd.read_csv(monthly_performance_data_file,
                           usecols=['id_loan', 'delq_sts', 'loan_age', 'cd_zero_bal'],
                           dtype={'delq_sts': str})
 print(f"time to load performance data: {datetime.now() - st}")
+# time to load performance data: 0:00:30.401856
 
 df_2 = performance.groupby('id_loan').tail(1)
 df_3 = df_2[df_2.delq_sts != 'R'].copy()
@@ -247,7 +249,12 @@ print(_.head(20))
 # _.to_csv("~/Desktop/Figure_mutual_information.csv")
 
 # Keep features w/variance_pct >= 2% & mutual_info >= x%
-cols_to_use = list(_[(_.variance_pct >= 0.02) & (_.mutual_info_pct >= 0)].index.values) + numeric_features
+# 126 cols 2%
+# 259 cols 1%
+_VARIANCE_THRESH = 0.05
+cols_to_use = list(_[(_.variance_pct >= _VARIANCE_THRESH) &
+                     (_.mutual_info_pct >= 0)].index.values) + numeric_features
+print(f"for variance thresh of {_VARIANCE_THRESH}, there are {len(cols_to_use)} columns")
 df_5 = df_4[cols_to_use]
 
 print(df_5.index.get_level_values(1).value_counts(normalize=True) * 100)
@@ -255,7 +262,9 @@ print(df_5.index.get_level_values(1).value_counts(normalize=True) * 100)
 # AKA 4253 out of 580404
 
 # Modeling - sample data at first
-df_6 = df_5.dropna().sample(frac=0.5)
+_FRACTION = 0.75
+df_6 = df_5.dropna().sample(frac=_FRACTION)
+print(f"Sampling fraction of {_FRACTION}")
 X, y = df_6, df_6.index.get_level_values(1)
 
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.30, random_state=0)
@@ -272,14 +281,22 @@ st_2 = datetime.now()
 print(f"current time is {st_2}")
 alg.fit(X_train, y_train, eval_metric='auc')
 print(f"time to train xgboost model: {datetime.now() - st_2}")
+# for variance thresholding of 0.05
+# 57 columns
+# for frac=0.75
+# for variance thresholding of 0.04
+# 2:00.148950 for frac=0.5
+# for variance thresholding of 0.01
+# 3:56.082855 for frac=0.25
+# for variance thresholding of 0.02
 # 5:27.515833 for frac=0.75
 # 4:27.912570 for frac=0.5
+# 1:15.503807 for frac=0.25
 
 # Examine predictions
 predictions = alg.predict(X_test)
 pred_proba = alg.predict_proba(X_test)[:, 1]
 print(f"confusion matrix:\n {round(pd.crosstab(predictions, y_test, normalize=True)*100, 2)}")
-
 print(f"accuracy score : {accuracy_score(y_test, predictions):.2f}")
 print(f"roc auc score: {roc_auc_score(y_test, pred_proba):.2f}")
 print(f"f1 score: {f1_score(y_test, predictions):.2f}")
