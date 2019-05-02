@@ -283,7 +283,7 @@ alg.fit(X_train, y_train, eval_metric='auc')
 print(f"time to train xgboost model: {datetime.now() - st_2}")
 # for variance thresholding of 0.05
 # 57 columns
-# for frac=0.75
+# 2:24.559159 for frac=0.75
 # for variance thresholding of 0.04
 # 2:00.148950 for frac=0.5
 # for variance thresholding of 0.01
@@ -310,11 +310,13 @@ plt.show()
 
 feat_imp = alg.feature_importances_
 feat = X_train.columns.tolist()
-res_df = pd.DataFrame({'features': feat, 'importance': feat_imp}).sort_values(by='importance', ascending=False)
+res_df = pd.DataFrame({'features': feat, 'feature_importance': feat_imp})\
+    .sort_values(by='feature_importance', ascending=False)
 
 res_df = pd.merge(res_df, _, left_on='features', right_index=True, how='left')
 res_df = pd.merge(res_df,
                   roc_auc_.to_frame(name='roc_auc').reset_index().rename(columns={'index': 'features'}),
                   on='features',
                   how='left')
-res_df = res_df[['features', 'importance', 'mutual_info_pct', 'variance_pct', 'kount', 'roc_auc']]
+res_df = res_df[['features', 'feature_importance', 'mutual_info_pct', 'variance_pct', 'kount', 'roc_auc']]
+print(res_df)
