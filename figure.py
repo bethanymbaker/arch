@@ -3,8 +3,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from datetime import datetime
 from sklearn.model_selection import train_test_split
-from sklearn import metrics
-from sklearn.metrics import f1_score, roc_auc_score, accuracy_score
+from sklearn.metrics import f1_score, roc_auc_score, accuracy_score, roc_curve
 from xgboost import XGBClassifier
 from sklearn.feature_selection import mutual_info_classif
 import numpy as np
@@ -213,26 +212,29 @@ df_4 = pd.merge(origination, df_3['is_deliquent'], left_index=True, right_index=
 __ = df_4[numeric_features].dropna()
 tgt = __.index.get_level_values(1)
 __ = __.apply(lambda clmn: roc_auc_score(tgt, clmn)).sort_values(ascending=False)
+print('roc auc values:')
 print(__)
 # Cltv slightly lower than ltv
 numeric_features.remove('cltv')
 
-# look at mutual information of discrete features and target
-target = df_4.index.get_level_values(1).values
-discrete_features = df_4.loc[:, "is_first_time_home_buyer_Y":]
-_ = pd.DataFrame(index=discrete_features.columns, columns=['mutual_info'])
-_['mutual_info'] = mutual_info_classif(discrete_features, target, discrete_features=True)
-_['mutual_info_pct'] = _['mutual_info']/_.mutual_info.max()
-_['variance'] = discrete_features.var()
-_['variance_pct'] = _.variance/_.variance.max()
-_['kount'] = df_4[_.index].sum()
+# look at variance & mutual information of discrete features and target
+_ = pd.read_csv("~/Desktop/Figure_mutual_information.csv")
+# print("computing mutual information of discrete features...")
+# st_0 = datetime.now()
+# target = df_4.index.get_level_values(1).values
+# discrete_features = df_4.loc[:, "is_first_time_home_buyer_Y":]
+# _ = pd.DataFrame(index=discrete_features.columns, columns=['mutual_info'])
+# _['mutual_info'] = mutual_info_classif(discrete_features, target, discrete_features=True)
+# _['mutual_info_pct'] = _['mutual_info']/_.mutual_info.max()
+# _['variance'] = discrete_features.var()
+# _['variance_pct'] = _.variance/_.variance.max()
+# _['kount'] = df_4[_.index].sum()
+# print(f"time to compute mutual information = {datetime.now() - st_0}")
 
-sns.distplot(_.variance)
-plt.grid()
+# sns.distplot(_.variance)
+# plt.grid()
 
 # Look at features with maximum mutual information
-# problem w/ msa_38060.0
-
 _.sort_values('mutual_info', inplace=True, ascending=False)
 print(_.head(20))
 
@@ -241,21 +243,19 @@ cols_to_use = list(_[(_.variance_pct >= 0.02) & (_.mutual_info_pct >= 0)].index.
 df_5 = df_4[cols_to_use]
 
 print(df_5.index.get_level_values(1).value_counts(normalize=True) * 100)
-# Very imbalanced dataset (0.73% deliquent)
+# Very imbalanced dataset (only 0.73% deliquent)
 
-# Modeling - start with small sample of data
-df_6 = df_5.dropna().sample(frac=0.5)
+# Modeling - sample data at first
+df_6 = df_5.dropna().sample(frac=0.25)
 
 # compute scale factor
 vals = df_6.index.get_level_values(1).value_counts().values
 scale_pos_weight = vals[0]/vals[1]
 print(f"scale factor = {scale_pos_weight:.2f}")
 
-X, y = df_6.iloc[:, :-1], df_6.iloc[:, -1]
+X, y = df_6, df_6.index.get_level_values(1)
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.30, random_state=0)
 
-
-########################################################################################################################
 # Train xgboost
 alg = XGBClassifier(objective='binary:logistic',
                     scale_pos_weight=scale_pos_weight)
@@ -266,14 +266,13 @@ print(f"time to train xgboost model: {datetime.now() - st_2}")
 
 # Is our model predicting just one class?
 predictions = alg.predict(X_test)
-print(np.unique(predictions))
 pred_proba = alg.predict_proba(X_test)[:, 1]
 
 print(f"accuracy score : {accuracy_score(y_test, predictions):.2f}")
 print(f"roc auc score: {roc_auc_score(y_test, pred_proba):.2f}")
 print(f"f1 score: {f1_score(y_test, predictions):.2f}")
 
-fpr, tpr, nope = metrics.roc_curve(y_test,  pred_proba)
+fpr, tpr, nope = roc_curve(y_test,  pred_proba)
 auc = roc_auc_score(y_test, pred_proba)
 plt.plot(fpr, tpr, label=f"auc = {auc:.2f}")
 plt.grid()
@@ -283,8 +282,10 @@ plt.show()
 feat_imp = alg.feature_importances_
 feat = X_train.columns.tolist()
 res_df = pd.DataFrame({'features': feat, 'importance': feat_imp}).sort_values(by='importance', ascending=False)
-# res_df.plot('Features', 'Importance', kind='bar', title='Feature Importances')
-# plt.ylabel('Feature Importance Score')
-# plt.show()
-print(res_df.head(20))
-print(res_df["features"].tolist())
+res_df = res_df[res_df.importance >= 0.001]
+
+res_df.plot('features', 'importance', kind='bar', title='Feature importances')
+plt.ylabel('Feature Importance Score')
+plt.show()
+# print(res_df.head())
+
