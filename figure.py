@@ -252,9 +252,10 @@ df_5 = df_4[cols_to_use]
 
 print(df_5.index.get_level_values(1).value_counts(normalize=True) * 100)
 # Very imbalanced dataset (only 0.73% deliquent)
+# AKA 4253 out of 580404
 
 # Modeling - sample data at first
-df_6 = df_5.dropna().sample(frac=0.750)
+df_6 = df_5.dropna().sample(frac=0.5)
 X, y = df_6, df_6.index.get_level_values(1)
 
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.30, random_state=0)
@@ -271,14 +272,13 @@ st_2 = datetime.now()
 print(f"current time is {st_2}")
 alg.fit(X_train, y_train, eval_metric='auc')
 print(f"time to train xgboost model: {datetime.now() - st_2}")
+# 5:27.515833 for frac=0.75
+# 4:27.912570 for frac=0.5
 
-# Is our model predicting just one class?
+# Examine predictions
 predictions = alg.predict(X_test)
 pred_proba = alg.predict_proba(X_test)[:, 1]
-
-ddf = pd.DataFrame({'pred': predictions}).rename(columns={0: 'pred'})
-ddf['actual'] = y_test
-print(f"confusion matrix:\n {round(pd.crosstab(ddf.pred, ddf.actual, normalize=True)*100, 2)}")
+print(f"confusion matrix:\n {round(pd.crosstab(predictions, y_test, normalize=True)*100, 2)}")
 
 print(f"accuracy score : {accuracy_score(y_test, predictions):.2f}")
 print(f"roc auc score: {roc_auc_score(y_test, pred_proba):.2f}")
