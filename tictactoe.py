@@ -19,7 +19,7 @@ def is_game_finished(board):
 
 
 all_boards = set()
-for game in range(250000):
+for game in range(100000):
     board = [['', '', ''] for i in range(3)]
 
     flag = bool(np.random.randint(2))
@@ -35,6 +35,6 @@ for game in range(250000):
             if board[row_num][col_num] == '':
                 board[row_num][col_num] = flag
                 flag = not flag
+                switch = True
             kount += 1
             all_boards.add(str(board))
-            switch = True
