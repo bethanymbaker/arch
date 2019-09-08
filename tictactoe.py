@@ -22,7 +22,7 @@ all_boards = set()
 for game in range(250000):
     board = [['', '', ''] for i in range(3)]
 
-    flag = True
+    flag = bool(np.random.randint(2))
     kount = 1
     all_boards.add(str(board))
 
