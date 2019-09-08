@@ -19,7 +19,7 @@ def is_game_finished(board):
 
 
 all_boards = set()
-for game in range(100000):
+for game in range(250000):
     board = [['', '', ''] for i in range(3)]
 
     flag = True
