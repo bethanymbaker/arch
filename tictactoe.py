@@ -23,11 +23,11 @@ def is_game_finished(bord):
 
 
 all_boards = set()
-for game in range(50000):
+for game in range(500000):
     board = [['', '', ''] for i in range(3)]
     all_boards.add(str(board))
 
-    flag = bool(np.random.randint(2))
+    flag = bool(np.random.randint(1))
 
     while not is_game_finished(board):
         switch_turn = False
