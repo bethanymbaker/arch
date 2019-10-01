@@ -12,17 +12,27 @@ pd.set_option('display.width', 200)
 
 
 interests = pd.read_csv('~/Desktop/interview_data_062019/company_candidate_interests.csv')
+data = pd.read_csv('~/Desktop/interview_data_062019/interview_data.csv')
 
-data = '~/Desktop/interview_data_062019/interview_data.csv'
-data = pd.read_csv(data)
-
-good_feat = ["experience_and_interests__years_xp","main_criterias__algorithmic_knowledge","main_criterias__architecture_skill","main_criterias__back_end_web_understanding","main_criterias__coding_productivity","main_criterias__culture_fit_and_friendliness","main_criterias__low_level_systems_understanding","main_criterias__placeability","main_criterias__professional_code","main_criterias__technical_communication","quiz_score","interviewer_decision"]
-
+good_feat = [
+    "experience_and_interests__years_xp",
+    "main_criterias__algorithmic_knowledge",
+    "main_criterias__architecture_skill",
+    "main_criterias__back_end_web_understanding",
+    "main_criterias__coding_productivity",
+    "main_criterias__culture_fit_and_friendliness",
+    "main_criterias__low_level_systems_understanding",
+    "main_criterias__placeability",
+    "main_criterias__professional_code",
+    "main_criterias__technical_communication",
+    "quiz_score",
+    "interviewer_decision"
+]
 X = data[good_feat + ['candidate_id']].copy().set_index('candidate_id')
 
-X.loc[X.main_criterias__back_end_web_understanding.isna(), :] = X.main_criterias__back_end_web_understanding.mean()
-X.loc[X.main_criterias__low_level_systems_understanding.isna(), :] = X.main_criterias__low_level_systems_understanding.mean()
-X.loc[X.experience_and_interests__years_xp.isna(), :] = X.experience_and_interests__years_xp.mean()
+X.loc[X.main_criterias__back_end_web_understanding.isna(), 'main_criterias__back_end_web_understanding'] = X.main_criterias__back_end_web_understanding.mean()
+X.loc[X.main_criterias__low_level_systems_understanding.isna(), 'main_criterias__low_level_systems_understanding'] = X.main_criterias__low_level_systems_understanding.mean()
+X.loc[X.experience_and_interests__years_xp.isna(), 'experience_and_interests__years_xp'] = X.experience_and_interests__years_xp.mean()
 
 
 X = pd.get_dummies(X, drop_first=True).sort_index()
@@ -32,7 +42,7 @@ y.columns = ['num_hits']
 
 XX = pd.merge(X, y, left_index=True, right_index=True)
 X = XX.drop(columns=['num_hits'])
-y = XX[['num_hits']]
+y = XX[['num_hits']].copy()
 
 # scoring = ['explained_variance', 'r2', 'neg_median_absolute_error', 'neg_mean_squared_error']
 X_train, X_test, y_train, y_test = train_test_split(X,
@@ -61,7 +71,6 @@ res = pd.DataFrame(index=vals, columns=['r2', 'mse'])
 for l2_reg in vals:
     lin_model = LinearRegression(fit_intercept=True, l2_reg=l2_reg)
     lin_model.fit(X_train.values, y_train.values)
-    betas = lin_model.betas
 
     y_test['y_pred_lm'] = lin_model.predict(X_test.values).reshape(-1, 1)
     res.loc[l2_reg, 'r2'] = metrics.r2_score(y_test.num_hits, y_test.y_pred_lm)
@@ -70,7 +79,6 @@ for l2_reg in vals:
     # print(f'r2_score = {metrics.r2_score(y_test.num_hits, y_test.y_pred_lm)}')
     # print(f'mean_squared_error = {metrics.mean_squared_error(y_test.num_hits, y_test.y_pred_lm)}')
 
-# y_test.plot(kind='scatter', x='num_hits', y='y_pred_num')
-
+y_test.plot(kind='scatter', x='num_hits', y='y_pred_num')
 ax = res.plot(subplots=True, grid=True)
 ax[0].set_xscale('log')

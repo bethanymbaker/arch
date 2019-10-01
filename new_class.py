@@ -2,6 +2,7 @@ from sklearn.datasets import make_regression
 import pandas as pd
 import numpy as np
 
+
 class LinearRegression:
 
     def __init__(self, fit_intercept=False, l2_reg=0):
@@ -32,7 +33,6 @@ class LinearRegression:
         return xx.values
 
 
-
 if __name__ == '__main__':
     X, y, true_coef = make_regression(n_samples=5000, n_features=1000, coef=True, bias=10)
 
@@ -50,10 +50,7 @@ if __name__ == '__main__':
 
     df = pd.DataFrame(data=no_reg, columns=['no_reg'])
     df['reg'] = with_reg
-
-
     df.sort_values('no_reg', ascending=False, inplace=True)
-
     df.head(15).plot(kind='bar', grid=True)
 
 
