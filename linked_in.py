@@ -1,6 +1,6 @@
 import pandas as pd
 
-with open('/Users/b.baker/Desktop/linkedin_followers.txt', 'r') as f:
+with open('/Users/b.baker/Desktop/linkedin_followers_2019-11-02.txt', 'r') as f:
     dat = f.readlines()
 
 dat_2 = [_.strip() for _ in dat if (_ != '\n' and
