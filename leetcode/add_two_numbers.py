@@ -6,7 +6,6 @@ class ListNode:
 
 
 def get_num(l1):
-    # print(l1)
     num_1 = []
 
     val = l1.val
@@ -36,3 +35,12 @@ class Solution:
             new_link_node.next = link_node
             link_node = new_link_node
         return link_node
+
+
+def list_to_link_node(lst):
+    pass
+
+if __name__ == '__main__':
+    lst_1 = [2, 4, 3]
+    lst_2 = [5, 6, 4]
+    pass
