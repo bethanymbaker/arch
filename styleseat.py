@@ -15,23 +15,25 @@ max_iterations = 1000
 stopping_criteria = 0.01
 
 kount = 0
-init_centroids = [data[idx] for idx in np.random.randint(0, data.shape[0], size=3)]
-print(init_centroids)
-
-df = pd.DataFrame(data=data)
+rand_centroids = [data[idx] for idx in np.random.randint(0, data.shape[0], size=3)]
+df = pd.DataFrame(data=data, columns=['x_coord'])
+df['y_actual'] = [0] * 100 + [1] * 100 + [2] * 100
 
 
 def get_label(data_point, clusters):
-    dists = [(data_point - clust)**2 for clust in clusters]
+    dists = [np.sqrt((data_point - clust)**2) for clust in clusters]
     return np.argmin(dists)
 
 
-df['label'] = df[0].apply(get_label, args=(init_centroids,))
+df['y_pred'] = df['x_coord'].apply(get_label, args=(rand_centroids,))
 
-new_centroids = df.groupby('label').mean().values.reshape(-1).tolist()
-# abs_diff = [np.abs(val[0] - val[1]) for val in list(zip(init_centroids, new_centroids))]
-df['new_label'] = df[0].apply(get_label, args=(new_centroids,))
-df['original_label'] = [0] * 100 + [1] * 100 + [2] * 100
+old_centroids = df.groupby('y_pred')['x_coord'].mean().values.reshape(-1).tolist()
+df.rename(columns={'y_pred': 'y_pred_old'}, inplace=True)
+df['y_pred'] = df['x_coord'].apply(get_label, args=(old_centroids,))
+new_centroids = df.groupby('y_pred')['x_coord'].mean().values.reshape(-1).tolist()
+
+abs_diff = [np.abs((val[0] - val[1])/val[0]) for val in list(zip(old_centroids, new_centroids))]
+pd.crosstab(df.y_actual, df.y_pred)
 
 # def get_centroids(data,k=3,stopping_criteria=0.01,max_iterations=1000):
 #     '''Returns the k centroids of the k clusters obtained for the data.
