@@ -93,9 +93,12 @@ page_values = pd.merge(pageviews[['user_id', 'article_title', 'page_value']].cop
                        left_on='user_id', right_index=True, how='left')
 page_values['score'] = page_values.page_value * page_values.user_similarity
 
-res = page_values.groupby('article_title').score.mean().sort_values(ascending=False)
-print(res.head(25))
-sns.distplot(res)
+res = page_values.groupby('article_title').score.mean().sort_values(ascending=False).to_frame('score')
+
+# Remove articles that are very similar
+res_2 = res.drop_duplicates(subset='score')
+print(res_2.head(15))
+sns.distplot(res_2.score)
 
 ########################################################################################################################
 from sklearn.cluster import KMeans
