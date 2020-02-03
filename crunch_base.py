@@ -75,14 +75,27 @@ df_5 = df_4.multiply(df_4.index.get_level_values('page_value'), axis=0).reset_in
 df_6 = df_5.groupby('user_id').mean()
 
 from sklearn.preprocessing import Normalizer
-
-df_7 = pd.DataFrame(index=df_6.index, data=Normalizer().fit_transform(df_6))
+user_matrix = pd.DataFrame(index=df_6.index, data=Normalizer().fit_transform(df_6))
 
 
 from sklearn.metrics.pairwise import cosine_similarity
+gram_matrix = pd.DataFrame(index=user_matrix.index, columns=user_matrix.index.values, data=cosine_similarity(user_matrix))
 
-df_8 = pd.DataFrame(index=df_7.index, columns=df_7.index.values, data=cosine_similarity(df_7))
 
+# Get Recommendations
+user_id = users.sample(1)['user_id'].values[0]
+print(f'user_id = {user_id}')
+user_article_titles = pageviews[pageviews.user_id == user_id].article_title.unique()
+print(user_article_titles)
+
+similarity_values = gram_matrix.loc[user_id].to_frame('user_similarity')
+page_values = pd.merge(pageviews[['user_id', 'article_title', 'page_value']].copy(), similarity_values,
+                       left_on='user_id', right_index=True, how='left')
+page_values['score'] = page_values.page_value * page_values.user_similarity
+
+res = page_values.groupby('article_title').score.mean().sort_values(ascending=False)
+print(res.head(25))
+sns.distplot(res)
 
 ########################################################################################################################
 from sklearn.cluster import KMeans
