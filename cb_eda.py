@@ -3,9 +3,9 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 from urllib.parse import urlparse
-import requests
-import pickle
-from multiprocessing import Pool
+# import requests
+# import pickle
+# from multiprocessing import Pool
 
 pd.set_option('display.max_rows', 500)
 pd.set_option('display.max_columns', 500)
