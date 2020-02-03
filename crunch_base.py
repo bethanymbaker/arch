@@ -29,7 +29,7 @@ pageviews['website'] = pageviews.article_url.apply(lambda url: urlparse(url).net
 
 pageviews['page_rank'] = pageviews.groupby('user_id')['created_at'].rank('first')
 pageviews['total_pageviews'] = pageviews.groupby('user_id')['page_rank'].transform('max')
-pageviews['visit_number'] = pageviews.groupby('user_id')['created_at_date'].rank('min')
+pageviews['visit_number'] = pageviews.groupby('user_id')['created_at_date'].rank('dense')
 pageviews['first_visit_date'] = pageviews.groupby('user_id')['created_at_date'].transform('min')
 
 pageviews['user_cohort'] = pageviews.groupby('user_id')['created_at_date'].transform('min').dt.strftime('%Y-%m-01').map(pd.to_datetime)
@@ -47,16 +47,70 @@ pageviews = pd.merge(pageviews,
 pageviews['days_since_first_visit'] = (pageviews.created_at_date - pageviews.first_visit_date).dt.days
 pageviews['customer_lifetime'] = (pageviews.last_visit_date - pageviews.first_visit_date).dt.days
 
+
+pageviews['delta_t'] = (pageviews.created_at_date.max() - pageviews.created_at_date).dt.days
+half_life = 30
+pageviews['value'] = pageviews.delta_t.map(lambda val: 0.5**(val / half_life))
+pageviews['num_title_words'] = pageviews.article_title.map(lambda title: len(title.split(' ')))
+
+
+# test = pageviews[pageviews.user_id == 'ba87d67b-0b90-4693-9da0-b6ed99002d69']
+
+
+from sklearn.feature_extraction.text import HashingVectorizer
+vectorizer = HashingVectorizer(stop_words='english',
+                               ngram_range=(1, 2),
+                               strip_accents='unicode',
+                               n_features=512)
+
+df = pd.DataFrame(data=pageviews.article_title.drop_duplicates())
+
+X = pd.DataFrame(vectorizer.fit_transform(df['article_title']).toarray())
+df_2 = pd.concat([df, X], axis=1)
+
+
+from sklearn.cluster import KMeans
+
+intertias = []
+for num_clusters in range(1, 25):
+    print(f'num_clusters = {num_clusters}')
+    kmeans = KMeans(n_clusters=num_clusters)
+    res = kmeans.fit(X)
+    intertias.append(res.inertia_)
+
+plt.plot(list(range(1, 25)), intertias)
+plt.grid()
+
+########################################################################################################################
 # Look at median time to next visit
-pageviews[['user_id', 'visit_number', 'created_at_date']].drop_duplicates().sort_values(['user_id', 'created_at_date'])
+tmp = pageviews[['user_id', 'visit_number', 'created_at_date']].drop_duplicates().sort_values(['user_id', 'created_at_date'])
+tmp['next_visit_date'] = tmp.groupby('user_id').created_at_date.shift(-1)
+tmp['days_to_next_visit'] = (tmp.next_visit_date - tmp.created_at_date).dt.days
+
+# 30 Day Half Life ;)
+
+
 
 # pageviews[pageviews.user_id == '10b2c9ab-c3fe-49cd-81a8-89761a5d372f']
 # pageviews.groupby(['user_cohort', 'acquisition_channel'])['user_id'].nunique().unstack('acquisition_channel').plot(grid=True)
 
 
-def get_retention_cohort():
-    dayz = [0, 15, 30]
-    pass
+def get_retention_cohort(val):
+    dayz = [0, 30, 60, 90, 120, 180, np.inf]
+    for day in dayz:
+        if val <= day:
+            return day
+
+
+pageviews['retention_cohort'] = pageviews.days_since_first_visit.map(get_retention_cohort)
+
+df = pageviews.groupby(['user_cohort', 'retention_cohort']).user_id.nunique()
+df_2 = df.unstack('retention_cohort')
+
+cohort_sizes = df_2.loc[:, 0.0].copy()
+
+df_3 = df_2.div(cohort_sizes.values, axis=0).drop(columns=[np.inf, 0.0])
+df_3.plot(grid=True)
 
 ########################################################################################################################
 from sklearn.feature_extraction.text import CountVectorizer
