@@ -12,13 +12,9 @@ pd.set_option('display.max_columns', 500)
 pd.set_option('display.width', 200)
 pd.set_option('display.max_colwidth', 50)
 
-pageviews = pd.read_csv("~/Desktop/data/pageviews.csv",
-                        index_col=0,
-                        parse_dates=[2]) \
+pageviews = pd.read_csv("~/Desktop/data/pageviews.csv", index_col=0, parse_dates=[2]) \
     .rename(columns={'time': 'created_at'})
-users = pd.read_csv("~/Desktop/data/users.csv",
-                    index_col=0,
-                    parse_dates=[2])
+users = pd.read_csv("~/Desktop/data/users.csv", index_col=0, parse_dates=[2])
 
 assert pageviews.user_id.nunique() == users.user_id.nunique()
 
@@ -50,7 +46,7 @@ pageviews['customer_lifetime'] = (pageviews.last_visit_date - pageviews.first_vi
 
 pageviews['delta_t'] = (pageviews.created_at_date.max() - pageviews.created_at_date).dt.days
 half_life = 30
-pageviews['value'] = pageviews.delta_t.map(lambda val: 0.5**(val / half_life))
+pageviews['page_value'] = pageviews.delta_t.map(lambda val: 0.5**(val / half_life))
 pageviews['num_title_words'] = pageviews.article_title.map(lambda title: len(title.split(' ')))
 
 
@@ -66,9 +62,29 @@ vectorizer = HashingVectorizer(stop_words='english',
 df = pd.DataFrame(data=pageviews.article_title.drop_duplicates())
 
 X = pd.DataFrame(vectorizer.fit_transform(df['article_title']).toarray())
-df_2 = pd.concat([df, X], axis=1)
+
+df_2 = X.set_index(df.article_title.values)
+
+df_3 = pageviews[['user_id', 'article_title', 'page_value']].copy()
+
+df_4 = pd.merge(df_3, df_2, left_on='article_title', right_index=True, how='left').drop(columns=['article_title']) \
+    .set_index(['user_id', 'page_value'])
+
+df_5 = df_4.multiply(df_4.index.get_level_values('page_value'), axis=0).reset_index().drop(columns=['page_value'])
+
+df_6 = df_5.groupby('user_id').mean()
+
+from sklearn.preprocessing import Normalizer
+
+df_7 = pd.DataFrame(index=df_6.index, data=Normalizer().fit_transform(df_6))
 
 
+from sklearn.metrics.pairwise import cosine_similarity
+
+df_8 = pd.DataFrame(index=df_7.index, columns=df_7.index.values, data=cosine_similarity(df_7))
+
+
+########################################################################################################################
 from sklearn.cluster import KMeans
 
 intertias = []
