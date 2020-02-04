@@ -19,10 +19,9 @@ users = pd.read_csv("~/Desktop/data/users.csv", index_col=0, parse_dates=[2])
 assert pageviews.user_id.nunique() == users.user_id.nunique()
 
 users['created_at_date'] = pd.to_datetime(users.created_at.dt.strftime('%Y-%m-%d'))
-
 pageviews['created_at_date'] = pd.to_datetime(pageviews.created_at.dt.strftime('%Y-%m-%d'))
-pageviews['website'] = pageviews.article_url.apply(lambda url: urlparse(url).netloc)
 
+pageviews['website'] = pageviews.article_url.apply(lambda url: urlparse(url).netloc)
 pageviews['page_rank'] = pageviews.groupby('user_id')['created_at'].rank('first')
 pageviews['total_pageviews'] = pageviews.groupby('user_id')['page_rank'].transform('max')
 pageviews['visit_number'] = pageviews.groupby('user_id')['created_at_date'].rank('dense')
