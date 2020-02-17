@@ -35,21 +35,22 @@ evaluation = alphabet_df[alphabet_df.type == 'evaluation'].drop(columns=['type',
 
 from keras.layers import Input, Conv2D, MaxPooling2D, Flatten, Dense, Lambda, BatchNormalization
 from keras.models import Sequential, Model
+from keras import backend as K
 
 
 def siamese_model(input_shape):
     left = Input(input_shape)
     right = Input(input_shape)
     model = Sequential()
-    model.add(Conv2D(32, (3,3), activation='relu', input_shape=input_shape))
+    model.add(Conv2D(32, (3, 3), activation='relu', input_shape=input_shape))
     model.add(BatchNormalization())
-    model.add(Conv2D(64, (3,3), activation='relu'))
+    model.add(Conv2D(64, (3, 3), activation='relu'))
     model.add(BatchNormalization())
-    model.add(Conv2D(128, (3,3), activation='relu'))
+    model.add(Conv2D(128, (3, 3), activation='relu'))
     model.add(BatchNormalization())
-    model.add(Conv2D(256, (3,3), activation='relu'))
+    model.add(Conv2D(256, (3, 3), activation='relu'))
     model.add(BatchNormalization())
-    model.add(Conv2D(256, (3,3), activation='relu'))
+    model.add(Conv2D(256, (3, 3), activation='relu'))
     model.add(MaxPooling2D())
     model.add(BatchNormalization())
     model.add(Flatten())
@@ -59,10 +60,10 @@ def siamese_model(input_shape):
     right_encoded = model(right)
     l1_layer = Lambda(lambda tensors: K.abs(tensors[0] - tensors[1]))
     l1_distance = l1_layer([left_encoded, right_encoded])
-    prediction = Dense(1,activation='sigmoid')(l1_distance)
+    prediction = Dense(1, activation='sigmoid')(l1_distance)
     siamese_net = Model(inputs=[left, right], outputs=prediction)
     return siamese_net
 
-
 # model = siamese_model((150, 150, 1))
 # model.compile(loss="binary_crossentropy", optimizer="adam", metrics=['accuracy'])
+
