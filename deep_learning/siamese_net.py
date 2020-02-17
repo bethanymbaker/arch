@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import os
 import matplotlib.pyplot as plt
+from hashlib import sha256
 
 pd.set_option('display.max_rows', 500)
 pd.set_option('display.max_columns', 500)
@@ -18,8 +19,9 @@ for image_type in image_types:
         for character in character_list:
             images = [f for f in os.listdir(os.path.join(path, alphabet, character)) if not f.startswith('.')]
             for image in images:
-                alphabet_dicts.append({'alphabet': alphabet,
+                alphabet_dicts.append({'alphabet': alphabet.lower(),
                                        'character': character,
+                                       'entity_id': '_'.join([alphabet.lower(), character]),
                                        'image_path': os.path.join(path, alphabet, character, image),
                                        'type': image_type.split('_')[1]})
 
@@ -27,3 +29,6 @@ alphabet_df = pd.DataFrame(alphabet_dicts)
 
 test_image_path = alphabet_df.sample().image_path.values[0]
 im = plt.imread(test_image_path)
+
+background = alphabet_df[alphabet_df.type == 'background'].drop(columns=['type', 'alphabet', 'character'])
+evaluation = alphabet_df[alphabet_df.type == 'evaluation'].drop(columns=['type', 'alphabet', 'character'])
