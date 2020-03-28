@@ -3,6 +3,7 @@
 .idea/
 aclImdb/
 .ipynb_checkpoints/
+config.ini
 
 
 __pycache__/
