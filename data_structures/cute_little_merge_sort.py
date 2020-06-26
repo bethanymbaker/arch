@@ -25,4 +25,6 @@ def merge_sorted_lists(list_1, list_2):
     return new_list
 
 
-merge_sorted_lists([1, 3, 5], [2, 4])
+# merge_sorted_lists([1, 3, 5], [2, 4])
+
+res = reduce(merge_sorted_lists, arr_list)
