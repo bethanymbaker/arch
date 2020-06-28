@@ -10,8 +10,6 @@ graph = {
 }
 
 
-# visited = set()
-
 def depth_first(node, visited=set()):
     visited.add(node)
     print(f'node = {node}')
