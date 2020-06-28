@@ -8,7 +8,7 @@ def is_palindrome(text):
     return text == text[::-1]
 
 
-longest_palindrome = ''
+longest_palindrome = s[0]
 
 for idx_1, val_1 in enumerate(s[:-1]):
     test_str = val_1
