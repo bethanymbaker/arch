@@ -13,7 +13,7 @@ def find_indices(arr, target):
             last_index = np.max([last_index, idx])
 
     if found:
-        return [first_index, last_index]
+        return [int(first_index), int(last_index)]
     else:
         return [-1, -1]
 
