@@ -1,13 +1,3 @@
-str = "(a+b)"  # True
-str = ")a+b("  # False
-str = "(a+b))"  # False
-
-str = "[(a+b)]"  # True
-str = "[(a+b)+{c+d}]"  # True
-str = "[(a+b)+}c+d{]"  # False
-str = "((a+b)+d)"  # True
-
-
 def is_balanced(str):
     d = {'(': 1, ')': -1, '[': 2, ']': -2, '{': 3, '}': -3}
     l = [d[val] for val in list(str) if val in d]
@@ -21,14 +11,15 @@ def is_balanced(str):
             old_val = queue.pop()
             if val + old_val != 0:
                 return False
-    return True
+    return not len(queue) > 0
 
 
-# str = "(a+b)" # True
-# str = ")a+b(" # False
-# str = "(a+b))" # False
-
+str = "(a+b)"  # True
+str = ")a+b("  # False
+str = "(a+b))"  # False
 str = "[(a+b)]"  # True
 str = "[(a+b)+{c+d}]"  # True
 str = "[(a+b)+}c+d{]"  # False
+str = "((("
+str = ")))"
 print(is_balanced(str))
