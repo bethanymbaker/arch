@@ -1,5 +1,5 @@
 def merge(intervals):
-    sorted_intervals = sorted(ints, key=lambda i: i[0] + i[1] / (10 * len(str(i[1]))))
+    sorted_intervals = sorted(intervals, key=lambda i: i[0])
     merged_intervals = []
     left_interval = sorted_intervals.pop(0)
     for right_interval in sorted_intervals:
