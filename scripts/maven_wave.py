@@ -12,17 +12,22 @@ df = pd.read_csv('~/Desktop/maven_wave/Baker - Lending Club Data - DR_Demo_Lendi
                  index_col='Id',
                  parse_dates=['earliest_cr_line'],
                  dtype={'is_bad': bool})
+df['earliest_cr_cohort'] = df.earliest_cr_line.dt.strftime('%Y-%m-01')
+df['pymnt_plan'] = df.pymnt_plan.map({'y': True, 'n': False})
+df.groupby('earliest_cr_cohort').size().plot(grid=True)
 
-df.nunique().sort_values(ascending=False).plot(kind='bar', grid=True)
+df.isna().sum().sort_values(ascending=False)
+
+df.select_dtypes(include='object').nunique().sort_values(ascending=False).plot(kind='bar', grid=True)
 plt.xticks(rotation=45, ha='right')
 plt.title('Number of Unique Values Per Feature')
+plt.xticks(rotation=45, ha='right')
 plt.gcf().tight_layout()
 
 plt.figure(figsize=(8, 6))
 corr = df.select_dtypes(include=[np.number, bool]).drop(columns=['collections_12_mths_ex_med']).corr()
 sns.heatmap(corr, annot=False, cmap=plt.cm.Reds)
-ax = plt.gca()
-ax.set_xticklabels(ax.get_xticklabels(), rotation=45, ha='right')
+plt.xticks(rotation=45, ha='right')
 plt.gcf().tight_layout()
 
 corr_2 = corr.unstack().to_frame('value').reset_index()
@@ -38,7 +43,7 @@ plt.gcf().tight_layout()
 corr_2['features_set'] = corr_2.apply(lambda row: str(sorted([row.level_0, row.level_1])), axis=1)
 corr_2 = corr_2.drop_duplicates(subset=['features_set']) \
     .drop(columns=['level_0', 'level_1']) \
-    .sort_values('value', ascending=False)
+    .sort_values('value', ascending=False).dropna()
 sns.distplot(corr_2.value)
 plt.title('Correlation Values Between Numeric Features')
 plt.grid()
