@@ -28,9 +28,9 @@ plt.gcf().tight_layout()
 corr_2 = corr.unstack().to_frame('value').reset_index()
 corr_2 = corr_2[corr_2.level_0 != corr_2.level_1]
 
-tmp = corr_2[corr_2.level_0 == 'is_bad'].copy().rename(columns={'level_1': 'feature'}).set_index('feature')[
+tmp = corr_2[corr_2.level_0 == 'is_bad'].rename(columns={'level_1': 'feature'}).set_index('feature')[
     ['value']].sort_values('value', ascending=False)
-tmp.plot(kind='bar', grid=True)
+tmp.plot(kind='bar', grid=True, legend=None)
 plt.title('Correlation to is_bad')
 plt.xticks(rotation='45', ha='right')
 plt.gcf().tight_layout()
@@ -39,3 +39,6 @@ corr_2['features_set'] = corr_2.apply(lambda row: str(sorted([row.level_0, row.l
 corr_2 = corr_2.drop_duplicates(subset=['features_set']) \
     .drop(columns=['level_0', 'level_1']) \
     .sort_values('value', ascending=False)
+sns.distplot(corr_2.value)
+plt.title('Correlation Values Between Numeric Features')
+plt.grid()
