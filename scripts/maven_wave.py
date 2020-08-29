@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
+from sklearn import preprocessing
 
 pd.set_option('display.max_rows', 500)
 pd.set_option('display.max_columns', 500)
@@ -12,9 +13,14 @@ df = pd.read_csv('~/Desktop/maven_wave/Baker - Lending Club Data - DR_Demo_Lendi
                  index_col='Id',
                  parse_dates=['earliest_cr_line'],
                  dtype={'is_bad': bool})
-df['earliest_cr_cohort'] = df.earliest_cr_line.dt.strftime('%Y-%m-01')
+
+# Remove invalid dates
+df.loc[df.earliest_cr_line >= pd.to_datetime('2020-01-01'), 'earliest_cr_line'] = pd.NaT
+df['earliest_cr_cohort'] = df.earliest_cr_line.dt.strftime('%Y')
 df['pymnt_plan'] = df.pymnt_plan.map({'y': True, 'n': False})
-df.groupby('earliest_cr_cohort').size().plot(grid=True)
+df.groupby('earliest_cr_cohort').size().plot(grid=True, label='num_loans')
+plt.legend()
+plt.title('Year of Earliest Credit Line')
 
 df.isna().sum().sort_values(ascending=False)
 
@@ -46,4 +52,12 @@ corr_2 = corr_2.drop_duplicates(subset=['features_set']) \
     .sort_values('value', ascending=False).dropna()
 sns.distplot(corr_2.value)
 plt.title('Correlation Values Between Numeric Features')
+plt.grid()
+
+scaler = preprocessing.MinMaxScaler()
+df_scale = pd.DataFrame(index=df.select_dtypes(include=[np.number, bool]).index,
+                        data=scaler.fit_transform(df.select_dtypes(include=[np.number, bool])),
+                        columns=df.select_dtypes(include=[np.number, bool]).columns)
+sns.distplot(df_scale.var())
+plt.title('Variance of normalized numeric features')
 plt.grid()
