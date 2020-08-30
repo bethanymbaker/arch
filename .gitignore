@@ -4,6 +4,7 @@
 aclImdb/
 .ipynb_checkpoints/
 config.ini
+dask-worker-space/
 
 
 __pycache__/

@@ -3,6 +3,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn import preprocessing
+from dask.distributed import Client
+
+client = Client(n_workers=4, threads_per_worker=1)
+print(client)
 
 pd.set_option('display.max_rows', 500)
 pd.set_option('display.max_columns', 500)
