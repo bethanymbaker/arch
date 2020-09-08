@@ -18,7 +18,7 @@ words = []
 for title in titles:
     words.extend(title.split(' '))
 
-lower_words = [val.lower().strip() for val in words if val != '']
+lower_words = [val.lower() for val in words if val != '']
 unique_words = set(lower_words)
 
 
