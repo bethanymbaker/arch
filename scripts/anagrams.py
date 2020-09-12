@@ -8,13 +8,9 @@ def is_match(str1, str2, schars=[]):
         str2 = re.sub(pattern, '', str2)
     if len(str1) != len(str2):
         return False
-    l2 = list(str2)
-    for s in str1:
-        try:
-            l2.remove(s)
-        except:
-            return False
-    return True
+    l1 = sorted(list(str1))
+    l2 = sorted(list(str2))
+    return ''.join(l1) == ''.join(l2)
 
 
 str1 = 'eat'
