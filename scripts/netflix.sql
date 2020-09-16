@@ -26,10 +26,8 @@ select year, month, count(user_id) as cnt
 from (
 select year(date) as year, month(date) as month, p.user_id as user_id, count(distinct device_category) as num_categories from
 playback p
-join title t
-join device d
-on d.device_id = p.device_id
-on t.title_id = p.title_id
+join title t on t.title_id = p.title_id
+join device d on d.device_id = p.device_id
 where lower(title_name) LIKE 'stranger things' and date >= '2019-01-01'
 group by 1, 2, 3
 ) t
