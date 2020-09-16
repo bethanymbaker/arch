@@ -33,6 +33,6 @@ on t.title_id = p.title_id
 where lower(title_name) LIKE 'stranger things' and date >= '2019-01-01'
 group by 1, 2, 3
 ) t
-where num_categories > 2
+where num_categories >= 2
 group by 1, 2
 order by 1, 2
