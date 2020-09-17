@@ -52,19 +52,23 @@ limit 1
 # track 2   mar 4
 
 
-select s.date, t.track_id, max(kount) as max_count
+select s.track_id, s.date from
+(
+select track_id, max(kount) as max_count
 from (
 select date, track_id, count(*) as kount
 from user_track_streams
 group by 1, 2
-) t
+) t1
+group by 1, 2
+) t2
 join
 (
 select date, track_id, count(*) as kount
 from user_track_streams
 group by 1, 2
 ) s
-where s.track_id = t.track_id and s.kount = t.max_count
+where s.track_id = t2.track_id and s.kount = t2.max_count
 
 
 
