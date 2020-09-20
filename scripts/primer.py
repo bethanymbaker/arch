@@ -7,7 +7,6 @@ docid_to_title = json.loads(
 titles = []
 
 for key in docid_to_title.keys():
-    document = docid_to_title[key]
     try:
         title = docid_to_title[key]['content']['title']
         titles.append(title)
