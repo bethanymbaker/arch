@@ -1,7 +1,5 @@
 #!/bin/python
-
 import sys
-
 import json
 
 # create a dictionary with all the champion data
@@ -16,7 +14,8 @@ def lore_power(champion_name):
     return champion_powers[champion_name]['lore_power']
 
 
-# The battle score for a champion is defined by the remainder of champion's lore power divided by the enemy's game power (AKA 'mod')
+# The battle score for a champion is defined by the remainder of champion's lore power divided by the enemy's game
+# power (AKA 'mod')
 # For example, if Jax has lore power of 5, and game power of 12. TwistedFate has lore power of 20 and game power of 12.
 # Damage for Jax against TF is 5 mod 12 = 5. Damage for TF against Jax is 20 mod 12 = 8.
 # Since 8 > 5, TF wins. If a tie happens, return None as the winner.
@@ -35,7 +34,6 @@ def lore_battle(champion_a, champion_b):
 
 
 # champions_list contains the names for all champions
-
 champions_list = champion_powers.keys()
 
 
