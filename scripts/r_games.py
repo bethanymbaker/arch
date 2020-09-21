@@ -54,6 +54,7 @@ def lore_war_winner():
                     d[winner] += 1
                 else:
                     d[winner] = 1
+
     sorted_d = sorted(d.items(), key=lambda x: x[1], reverse=True)
     return sorted_d[0]
 
