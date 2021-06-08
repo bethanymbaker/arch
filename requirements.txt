@@ -116,7 +116,7 @@ pendulum==1.4.4
 pexpect==4.8.0
 pi==0.1.2
 pickleshare==0.7.5
-Pillow==7.2.0
+Pillow==8.2.0
 prison==0.1.3
 prometheus-client==0.7.1
 prompt-toolkit==3.0.2
