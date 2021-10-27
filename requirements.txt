@@ -27,7 +27,7 @@ colorlog==4.0.2
 configparser==3.5.3
 croniter==0.3.34
 cycler==0.10.0
-dask==2.25.0
+dask==2021.10.0
 decorator==4.4.1
 defusedxml==0.6.0
 dill==0.3.2
