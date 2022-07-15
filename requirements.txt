@@ -31,7 +31,7 @@ dask==2.25.0
 decorator==4.4.1
 defusedxml==0.6.0
 dill==0.3.2
-distributed==2.22.0
+distributed==2021.10.0
 dnspython==2.0.0
 docutils==0.15.2
 email-validator==1.1.1
